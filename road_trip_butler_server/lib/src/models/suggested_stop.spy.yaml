@@ -1,0 +1,14 @@
+class: SuggestedStop
+table: suggested_stop
+fields:
+  tripId: int                  # Links back to the Trip
+  name: String
+  address: String
+  latitude: double
+  longitude: double
+  category: String             # "lunch", "dinner", "sightseeing"
+  butlerNote: String           # Gemini's reason: "Great local vibe..."
+  rating: double?
+  priceLevel: int?
+  status: int                  # 0 = pending, 1 = accepted, 2 = rejected
+  estimatedArrivalTime: DateTime

@@ -1,0 +1,7 @@
+# stop_status.spy.yaml
+enum: StopStatus
+values:
+  - untouched # Initial state
+  - accepted  # User swiped right
+  - declined  # User swiped left
+  - bookmarked # User "starred" it or clicked "maybe"
