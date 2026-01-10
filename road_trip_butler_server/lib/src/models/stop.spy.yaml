@@ -3,6 +3,7 @@ table: stop
 fields:
   tripId: int                  # Links back to the Trip
   name: String
+  slotTitle: String           # Gemini labels this: "The Mid-Day Pitstop"
   address: String
   latitude: double
   longitude: double

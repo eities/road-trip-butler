@@ -8,6 +8,7 @@ class TripEndpoint extends Endpoint {
     required String startAddress,
     required String endAddress,
     required DateTime departureTime,
+    required String personality,
     required String preferences
   }) async {
     //await Trip.db.insertRow(session, trip);

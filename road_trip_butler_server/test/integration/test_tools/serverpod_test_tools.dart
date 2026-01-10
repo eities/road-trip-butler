@@ -466,6 +466,7 @@ class _TripEndpoint {
     required String startAddress,
     required String endAddress,
     required DateTime departureTime,
+    required String personality,
     required String preferences,
   }) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
@@ -483,6 +484,7 @@ class _TripEndpoint {
             'startAddress': startAddress,
             'endAddress': endAddress,
             'departureTime': departureTime,
+            'personality': personality,
             'preferences': preferences,
           }),
           serializationManager: _serializationManager,

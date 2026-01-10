@@ -1,6 +1,11 @@
 // lib/screens/trip_form_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:road_trip_butler_client/road_trip_butler_client.dart';
+
+
+late final Client client;
+late String serverUrl;
 
 class TripFormScreen extends StatefulWidget {
   @override
@@ -21,36 +26,96 @@ class _TripFormScreenState extends State<TripFormScreen> {
 ];
 
   Future<void> _pickDateTime() async {
-  // 1. Pick the Date
-  final DateTime? pickedDate = await showDatePicker(
-    context: context,
-    initialDate: _selectedDate,
-    firstDate: DateTime.now(), // Can't start a road trip in the past!
-    lastDate: DateTime.now().add(const Duration(days: 365)),
-  );
-
-  if (pickedDate == null) return; // User cancelled
-
-  // 2. Pick the Time
-  if (!mounted) return;
-  final TimeOfDay? pickedTime = await showTimePicker(
-    context: context,
-    initialTime: TimeOfDay.fromDateTime(_selectedDate),
-  );
-
-  if (pickedTime == null) return; // User cancelled
-
-  // 3. Combine them into one DateTime object
-  setState(() {
-    _selectedDate = DateTime(
-      pickedDate.year,
-      pickedDate.month,
-      pickedDate.day,
-      pickedTime.hour,
-      pickedTime.minute,
+    // 1. Pick the Date
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now(), // Can't start a road trip in the past!
+      lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-  });
-}
+
+    if (pickedDate == null) return; // User cancelled
+
+    // 2. Pick the Time
+    if (!mounted) return;
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedDate),
+    );
+
+    if (pickedTime == null) return; // User cancelled
+
+    // 3. Combine them into one DateTime object
+    setState(() {
+      _selectedDate = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        pickedTime.hour,
+        pickedTime.minute,
+      );
+    });
+  }
+
+  Future<void> _planTrip() async {
+    // 1. Show a loading dialog (The "Butler is Thinking" state)
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text("Your Butler is planning the route..."),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      // 2. Build the Trip object from your form fields
+      // final trip = Trip(
+      //   description: "${_startController.text} to ${_endController.text}",
+      //   startAddress: _startController.text,
+      //   endAddress: _endController.text,
+      //   departureTime: _selectedDate,
+      //   personality: _selectedPersona,
+      // );
+
+      // 3. Call Serverpod (Wait for Gemini and Google Maps to respond)
+      final completedTrip = await client.trip.createTrip(
+        startAddress: _startController.text,
+        endAddress: _endController.text,
+        departureTime: _selectedDate,
+        personality: _selectedPersona,
+        preferences: _notesController.text,
+      );
+
+      // 4. Close the loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      // 5. Navigate to the Selection Screen with the REAL data from the server
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => TripSelectionScreen(trip: completedTrip),
+        ),
+      );
+    } catch (e) {
+      Navigator.of(context).pop(); // Close dialog on error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Butler Error: $e")),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
