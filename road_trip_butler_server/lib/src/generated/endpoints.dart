@@ -13,11 +13,12 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../auth/email_idp_endpoint.dart' as _i2;
 import '../auth/jwt_refresh_endpoint.dart' as _i3;
-import '../greetings/greeting_endpoint.dart' as _i4;
+import '../endpoints/trip_endpoint.dart' as _i4;
+import '../greetings/greeting_endpoint.dart' as _i5;
 import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
-    as _i5;
-import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _i6;
+import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
+    as _i7;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -35,7 +36,13 @@ class Endpoints extends _i1.EndpointDispatch {
           'jwtRefresh',
           null,
         ),
-      'greeting': _i4.GreetingEndpoint()
+      'trip': _i4.TripEndpoint()
+        ..initialize(
+          server,
+          'trip',
+          null,
+        ),
+      'greeting': _i5.GreetingEndpoint()
         ..initialize(
           server,
           'greeting',
@@ -236,6 +243,48 @@ class Endpoints extends _i1.EndpointDispatch {
         ),
       },
     );
+    connectors['trip'] = _i1.EndpointConnector(
+      name: 'trip',
+      endpoint: endpoints['trip']!,
+      methodConnectors: {
+        'createTrip': _i1.MethodConnector(
+          name: 'createTrip',
+          params: {
+            'startAddress': _i1.ParameterDescription(
+              name: 'startAddress',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'endAddress': _i1.ParameterDescription(
+              name: 'endAddress',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+            'departureTime': _i1.ParameterDescription(
+              name: 'departureTime',
+              type: _i1.getType<DateTime>(),
+              nullable: false,
+            ),
+            'preferences': _i1.ParameterDescription(
+              name: 'preferences',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['trip'] as _i4.TripEndpoint).createTrip(
+                session,
+                startAddress: params['startAddress'],
+                endAddress: params['endAddress'],
+                departureTime: params['departureTime'],
+                preferences: params['preferences'],
+              ),
+        ),
+      },
+    );
     connectors['greeting'] = _i1.EndpointConnector(
       name: 'greeting',
       endpoint: endpoints['greeting']!,
@@ -253,16 +302,16 @@ class Endpoints extends _i1.EndpointDispatch {
               (
                 _i1.Session session,
                 Map<String, dynamic> params,
-              ) async => (endpoints['greeting'] as _i4.GreetingEndpoint).hello(
+              ) async => (endpoints['greeting'] as _i5.GreetingEndpoint).hello(
                 session,
                 params['name'],
               ),
         ),
       },
     );
-    modules['serverpod_auth_idp'] = _i5.Endpoints()
+    modules['serverpod_auth_idp'] = _i6.Endpoints()
       ..initializeEndpoints(server);
-    modules['serverpod_auth_core'] = _i6.Endpoints()
+    modules['serverpod_auth_core'] = _i7.Endpoints()
       ..initializeEndpoints(server);
   }
 }

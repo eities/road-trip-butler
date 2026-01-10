@@ -1,5 +1,5 @@
-class: SuggestedStop
-table: suggested_stop
+class: Stop
+table: stop
 fields:
   tripId: int                  # Links back to the Trip
   name: String
@@ -9,6 +9,6 @@ fields:
   category: String             # "lunch", "dinner", "sightseeing"
   butlerNote: String           # Gemini's reason: "Great local vibe..."
   rating: double?
-  priceLevel: int?
-  status: int                  # 0 = pending, 1 = accepted, 2 = rejected
+  priceLevel: PriceLevel       # cheap, medium, expensive
+  status: StopStatus           # untouched, accepted, declined, bookmarked
   estimatedArrivalTime: DateTime

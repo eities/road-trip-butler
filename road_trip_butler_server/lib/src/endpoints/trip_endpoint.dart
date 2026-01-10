@@ -3,6 +3,7 @@ import 'package:serverpod/serverpod.dart';
 import 'package:dartantic_ai/dartantic_ai.dart';
 
 class TripEndpoint extends Endpoint {
+
   Future<Trip> createTrip(Session session, {
     required String startAddress,
     required String endAddress,
@@ -23,4 +24,20 @@ class TripEndpoint extends Endpoint {
 
     return trip;
   }
+
+  // Future<> updateStopStatus(Session session, {
+  //   required int stopId,
+  //   required StopStatus status
+  // }) async {
+
+  // }
+
+  // Future<> getTripDetails(Session session, int tripId) async {
+
+  // }
+
+  // Future<> getFinalItinerary(Session session, int tripId) async {
+
+  // }
 }
+

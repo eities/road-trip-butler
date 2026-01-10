@@ -17,10 +17,14 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _i4;
 import 'greetings/greeting.dart' as _i5;
-import 'suggestedStop.dart' as _i6;
-import 'trip.dart' as _i7;
+import 'price_level.dart' as _i6;
+import 'stop.dart' as _i7;
+import 'stop_status.dart' as _i8;
+import 'trip.dart' as _i9;
 export 'greetings/greeting.dart';
-export 'suggestedStop.dart';
+export 'price_level.dart';
+export 'stop.dart';
+export 'stop_status.dart';
 export 'trip.dart';
 
 class Protocol extends _i1.SerializationManagerServer {
@@ -32,8 +36,8 @@ class Protocol extends _i1.SerializationManagerServer {
 
   static final List<_i2.TableDefinition> targetTableDefinitions = [
     _i2.TableDefinition(
-      name: 'suggested_stop',
-      dartName: 'SuggestedStop',
+      name: 'stop',
+      dartName: 'Stop',
       schema: 'public',
       module: 'road_trip_butler',
       columns: [
@@ -42,7 +46,7 @@ class Protocol extends _i1.SerializationManagerServer {
           columnType: _i2.ColumnType.bigint,
           isNullable: false,
           dartType: 'int?',
-          columnDefault: 'nextval(\'suggested_stop_id_seq\'::regclass)',
+          columnDefault: 'nextval(\'stop_id_seq\'::regclass)',
         ),
         _i2.ColumnDefinition(
           name: 'tripId',
@@ -94,15 +98,15 @@ class Protocol extends _i1.SerializationManagerServer {
         ),
         _i2.ColumnDefinition(
           name: 'priceLevel',
-          columnType: _i2.ColumnType.bigint,
-          isNullable: true,
-          dartType: 'int?',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'protocol:PriceLevel',
         ),
         _i2.ColumnDefinition(
           name: 'status',
-          columnType: _i2.ColumnType.bigint,
+          columnType: _i2.ColumnType.text,
           isNullable: false,
-          dartType: 'int',
+          dartType: 'protocol:StopStatus',
         ),
         _i2.ColumnDefinition(
           name: 'estimatedArrivalTime',
@@ -114,7 +118,7 @@ class Protocol extends _i1.SerializationManagerServer {
       foreignKeys: [],
       indexes: [
         _i2.IndexDefinition(
-          indexName: 'suggested_stop_pkey',
+          indexName: 'stop_pkey',
           tableSpace: null,
           elements: [
             _i2.IndexElementDefinition(
@@ -238,20 +242,32 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i5.Greeting) {
       return _i5.Greeting.fromJson(data) as T;
     }
-    if (t == _i6.SuggestedStop) {
-      return _i6.SuggestedStop.fromJson(data) as T;
+    if (t == _i6.PriceLevel) {
+      return _i6.PriceLevel.fromJson(data) as T;
     }
-    if (t == _i7.Trip) {
-      return _i7.Trip.fromJson(data) as T;
+    if (t == _i7.Stop) {
+      return _i7.Stop.fromJson(data) as T;
+    }
+    if (t == _i8.StopStatus) {
+      return _i8.StopStatus.fromJson(data) as T;
+    }
+    if (t == _i9.Trip) {
+      return _i9.Trip.fromJson(data) as T;
     }
     if (t == _i1.getType<_i5.Greeting?>()) {
       return (data != null ? _i5.Greeting.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i6.SuggestedStop?>()) {
-      return (data != null ? _i6.SuggestedStop.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i6.PriceLevel?>()) {
+      return (data != null ? _i6.PriceLevel.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i7.Trip?>()) {
-      return (data != null ? _i7.Trip.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i7.Stop?>()) {
+      return (data != null ? _i7.Stop.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i8.StopStatus?>()) {
+      return (data != null ? _i8.StopStatus.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i9.Trip?>()) {
+      return (data != null ? _i9.Trip.fromJson(data) : null) as T;
     }
     try {
       return _i3.Protocol().deserialize<T>(data, t);
@@ -268,8 +284,10 @@ class Protocol extends _i1.SerializationManagerServer {
   static String? getClassNameForType(Type type) {
     return switch (type) {
       _i5.Greeting => 'Greeting',
-      _i6.SuggestedStop => 'SuggestedStop',
-      _i7.Trip => 'Trip',
+      _i6.PriceLevel => 'PriceLevel',
+      _i7.Stop => 'Stop',
+      _i8.StopStatus => 'StopStatus',
+      _i9.Trip => 'Trip',
       _ => null,
     };
   }
@@ -289,9 +307,13 @@ class Protocol extends _i1.SerializationManagerServer {
     switch (data) {
       case _i5.Greeting():
         return 'Greeting';
-      case _i6.SuggestedStop():
-        return 'SuggestedStop';
-      case _i7.Trip():
+      case _i6.PriceLevel():
+        return 'PriceLevel';
+      case _i7.Stop():
+        return 'Stop';
+      case _i8.StopStatus():
+        return 'StopStatus';
+      case _i9.Trip():
         return 'Trip';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -318,11 +340,17 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'Greeting') {
       return deserialize<_i5.Greeting>(data['data']);
     }
-    if (dataClassName == 'SuggestedStop') {
-      return deserialize<_i6.SuggestedStop>(data['data']);
+    if (dataClassName == 'PriceLevel') {
+      return deserialize<_i6.PriceLevel>(data['data']);
+    }
+    if (dataClassName == 'Stop') {
+      return deserialize<_i7.Stop>(data['data']);
+    }
+    if (dataClassName == 'StopStatus') {
+      return deserialize<_i8.StopStatus>(data['data']);
     }
     if (dataClassName == 'Trip') {
-      return deserialize<_i7.Trip>(data['data']);
+      return deserialize<_i9.Trip>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -360,10 +388,10 @@ class Protocol extends _i1.SerializationManagerServer {
       }
     }
     switch (t) {
-      case _i6.SuggestedStop:
-        return _i6.SuggestedStop.t;
-      case _i7.Trip:
-        return _i7.Trip.t;
+      case _i7.Stop:
+        return _i7.Stop.t;
+      case _i9.Trip:
+        return _i9.Trip.t;
     }
     return null;
   }

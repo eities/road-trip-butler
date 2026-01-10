@@ -5,6 +5,7 @@ import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'screens/greetings_screen.dart';
+import 'screens/trip_form_screen.dart';
 
 /// Sets up a global client object that can be used to talk to the server from
 /// anywhere in our app. The client is generated from your server code
@@ -72,8 +73,8 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: const GreetingsScreen(),
+      //appBar: AppBar(title: Text(title)),
+      body: TripFormScreen(),
       // To test authentication in this example app, uncomment the line below
       // and comment out the line above. This wraps the GreetingsScreen with a
       // SignInScreen, which automatically shows a sign-in UI when the user is

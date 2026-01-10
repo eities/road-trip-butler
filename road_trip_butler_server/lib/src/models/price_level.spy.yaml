@@ -1,0 +1,5 @@
+enum: PriceLevel
+values:
+  - low # cheap
+  - medium  #medium
+  - high  # expensive

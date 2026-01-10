@@ -11,9 +11,11 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'price_level.dart' as _i2;
+import 'stop_status.dart' as _i3;
 
-abstract class SuggestedStop implements _i1.SerializableModel {
-  SuggestedStop._({
+abstract class Stop implements _i1.SerializableModel {
+  Stop._({
     this.id,
     required this.tripId,
     required this.name,
@@ -23,12 +25,12 @@ abstract class SuggestedStop implements _i1.SerializableModel {
     required this.category,
     required this.butlerNote,
     this.rating,
-    this.priceLevel,
+    required this.priceLevel,
     required this.status,
     required this.estimatedArrivalTime,
   });
 
-  factory SuggestedStop({
+  factory Stop({
     int? id,
     required int tripId,
     required String name,
@@ -38,13 +40,13 @@ abstract class SuggestedStop implements _i1.SerializableModel {
     required String category,
     required String butlerNote,
     double? rating,
-    int? priceLevel,
-    required int status,
+    required _i2.PriceLevel priceLevel,
+    required _i3.StopStatus status,
     required DateTime estimatedArrivalTime,
-  }) = _SuggestedStopImpl;
+  }) = _StopImpl;
 
-  factory SuggestedStop.fromJson(Map<String, dynamic> jsonSerialization) {
-    return SuggestedStop(
+  factory Stop.fromJson(Map<String, dynamic> jsonSerialization) {
+    return Stop(
       id: jsonSerialization['id'] as int?,
       tripId: jsonSerialization['tripId'] as int,
       name: jsonSerialization['name'] as String,
@@ -54,8 +56,10 @@ abstract class SuggestedStop implements _i1.SerializableModel {
       category: jsonSerialization['category'] as String,
       butlerNote: jsonSerialization['butlerNote'] as String,
       rating: (jsonSerialization['rating'] as num?)?.toDouble(),
-      priceLevel: jsonSerialization['priceLevel'] as int?,
-      status: jsonSerialization['status'] as int,
+      priceLevel: _i2.PriceLevel.fromJson(
+        (jsonSerialization['priceLevel'] as String),
+      ),
+      status: _i3.StopStatus.fromJson((jsonSerialization['status'] as String)),
       estimatedArrivalTime: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['estimatedArrivalTime'],
       ),
@@ -83,16 +87,16 @@ abstract class SuggestedStop implements _i1.SerializableModel {
 
   double? rating;
 
-  int? priceLevel;
+  _i2.PriceLevel priceLevel;
 
-  int status;
+  _i3.StopStatus status;
 
   DateTime estimatedArrivalTime;
 
-  /// Returns a shallow copy of this [SuggestedStop]
+  /// Returns a shallow copy of this [Stop]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
-  SuggestedStop copyWith({
+  Stop copyWith({
     int? id,
     int? tripId,
     String? name,
@@ -102,14 +106,14 @@ abstract class SuggestedStop implements _i1.SerializableModel {
     String? category,
     String? butlerNote,
     double? rating,
-    int? priceLevel,
-    int? status,
+    _i2.PriceLevel? priceLevel,
+    _i3.StopStatus? status,
     DateTime? estimatedArrivalTime,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
-      '__className__': 'SuggestedStop',
+      '__className__': 'Stop',
       if (id != null) 'id': id,
       'tripId': tripId,
       'name': name,
@@ -119,8 +123,8 @@ abstract class SuggestedStop implements _i1.SerializableModel {
       'category': category,
       'butlerNote': butlerNote,
       if (rating != null) 'rating': rating,
-      if (priceLevel != null) 'priceLevel': priceLevel,
-      'status': status,
+      'priceLevel': priceLevel.toJson(),
+      'status': status.toJson(),
       'estimatedArrivalTime': estimatedArrivalTime.toJson(),
     };
   }
@@ -133,8 +137,8 @@ abstract class SuggestedStop implements _i1.SerializableModel {
 
 class _Undefined {}
 
-class _SuggestedStopImpl extends SuggestedStop {
-  _SuggestedStopImpl({
+class _StopImpl extends Stop {
+  _StopImpl({
     int? id,
     required int tripId,
     required String name,
@@ -144,8 +148,8 @@ class _SuggestedStopImpl extends SuggestedStop {
     required String category,
     required String butlerNote,
     double? rating,
-    int? priceLevel,
-    required int status,
+    required _i2.PriceLevel priceLevel,
+    required _i3.StopStatus status,
     required DateTime estimatedArrivalTime,
   }) : super._(
          id: id,
@@ -162,11 +166,11 @@ class _SuggestedStopImpl extends SuggestedStop {
          estimatedArrivalTime: estimatedArrivalTime,
        );
 
-  /// Returns a shallow copy of this [SuggestedStop]
+  /// Returns a shallow copy of this [Stop]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
   @override
-  SuggestedStop copyWith({
+  Stop copyWith({
     Object? id = _Undefined,
     int? tripId,
     String? name,
@@ -176,11 +180,11 @@ class _SuggestedStopImpl extends SuggestedStop {
     String? category,
     String? butlerNote,
     Object? rating = _Undefined,
-    Object? priceLevel = _Undefined,
-    int? status,
+    _i2.PriceLevel? priceLevel,
+    _i3.StopStatus? status,
     DateTime? estimatedArrivalTime,
   }) {
-    return SuggestedStop(
+    return Stop(
       id: id is int? ? id : this.id,
       tripId: tripId ?? this.tripId,
       name: name ?? this.name,
@@ -190,7 +194,7 @@ class _SuggestedStopImpl extends SuggestedStop {
       category: category ?? this.category,
       butlerNote: butlerNote ?? this.butlerNote,
       rating: rating is double? ? rating : this.rating,
-      priceLevel: priceLevel is int? ? priceLevel : this.priceLevel,
+      priceLevel: priceLevel ?? this.priceLevel,
       status: status ?? this.status,
       estimatedArrivalTime: estimatedArrivalTime ?? this.estimatedArrivalTime,
     );
