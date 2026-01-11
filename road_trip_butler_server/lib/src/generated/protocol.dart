@@ -49,6 +49,12 @@ class Protocol extends _i1.SerializationManagerServer {
           columnDefault: 'nextval(\'stop_id_seq\'::regclass)',
         ),
         _i2.ColumnDefinition(
+          name: 'stopId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
           name: 'tripId',
           columnType: _i2.ColumnType.bigint,
           isNullable: false,
@@ -56,6 +62,12 @@ class Protocol extends _i1.SerializationManagerServer {
         ),
         _i2.ColumnDefinition(
           name: 'name',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'slotTitle',
           columnType: _i2.ColumnType.text,
           isNullable: false,
           dartType: 'String',
@@ -188,6 +200,12 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'int',
         ),
+        _i2.ColumnDefinition(
+          name: 'stops',
+          columnType: _i2.ColumnType.json,
+          isNullable: true,
+          dartType: 'List<protocol:Stop>?',
+        ),
       ],
       foreignKeys: [],
       indexes: [
@@ -268,6 +286,15 @@ class Protocol extends _i1.SerializationManagerServer {
     }
     if (t == _i1.getType<_i9.Trip?>()) {
       return (data != null ? _i9.Trip.fromJson(data) : null) as T;
+    }
+    if (t == List<_i7.Stop>) {
+      return (data as List).map((e) => deserialize<_i7.Stop>(e)).toList() as T;
+    }
+    if (t == _i1.getType<List<_i7.Stop>?>()) {
+      return (data != null
+              ? (data as List).map((e) => deserialize<_i7.Stop>(e)).toList()
+              : null)
+          as T;
     }
     try {
       return _i3.Protocol().deserialize<T>(data, t);

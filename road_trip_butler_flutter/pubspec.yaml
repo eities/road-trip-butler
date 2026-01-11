@@ -27,6 +27,8 @@ dependencies:
   cupertino_icons: ^1.0.5
   flutter:
     sdk: flutter
+  google_maps_flutter: ^2.5.3
+  collection: ^1.18.0
   road_trip_butler_client:
     path: ../road_trip_butler_client
   serverpod_auth_idp_flutter: 3.2.0

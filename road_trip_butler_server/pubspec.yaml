@@ -8,6 +8,7 @@ environment:
 
 dependencies:
   dartantic_ai: ^2.2.2
+  dartantic_chat: ^0.1.0
   serverpod: 3.2.0
   serverpod_auth_idp_server: 3.2.0
 

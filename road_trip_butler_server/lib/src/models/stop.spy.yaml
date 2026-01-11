@@ -1,6 +1,7 @@
 class: Stop
 table: stop
 fields:
+  stopId: int
   tripId: int                  # Links back to the Trip
   name: String
   slotTitle: String           # Gemini labels this: "The Mid-Day Pitstop"

@@ -2,10 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:road_trip_butler_client/road_trip_butler_client.dart';
+import 'trip_building_screen.dart';
+import '../main.dart';
 
-
-late final Client client;
-late String serverUrl;
 
 class TripFormScreen extends StatefulWidget {
   @override
@@ -105,7 +104,7 @@ class _TripFormScreenState extends State<TripFormScreen> {
       // 5. Navigate to the Selection Screen with the REAL data from the server
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => TripSelectionScreen(trip: completedTrip),
+          builder: (context) => TripBuildingScreen(trip: completedTrip),
         ),
       );
     } catch (e) {
@@ -204,7 +203,7 @@ class _TripFormScreenState extends State<TripFormScreen> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        // This is where you'll call client.trip.createTripPlan(...)
+                        _planTrip();
                       },
                       child: const Text("Plan My Route"),
                     ),

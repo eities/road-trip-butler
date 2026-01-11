@@ -11,6 +11,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
+import 'stop.dart' as _i2;
+import 'package:road_trip_butler_client/src/protocol/protocol.dart' as _i3;
 
 abstract class Trip implements _i1.SerializableModel {
   Trip._({
@@ -22,6 +24,7 @@ abstract class Trip implements _i1.SerializableModel {
     required this.polyline,
     this.preferences,
     required this.totalDurationSeconds,
+    this.stops,
   });
 
   factory Trip({
@@ -33,6 +36,7 @@ abstract class Trip implements _i1.SerializableModel {
     required String polyline,
     String? preferences,
     required int totalDurationSeconds,
+    List<_i2.Stop>? stops,
   }) = _TripImpl;
 
   factory Trip.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -47,6 +51,11 @@ abstract class Trip implements _i1.SerializableModel {
       polyline: jsonSerialization['polyline'] as String,
       preferences: jsonSerialization['preferences'] as String?,
       totalDurationSeconds: jsonSerialization['totalDurationSeconds'] as int,
+      stops: jsonSerialization['stops'] == null
+          ? null
+          : _i3.Protocol().deserialize<List<_i2.Stop>>(
+              jsonSerialization['stops'],
+            ),
     );
   }
 
@@ -69,6 +78,8 @@ abstract class Trip implements _i1.SerializableModel {
 
   int totalDurationSeconds;
 
+  List<_i2.Stop>? stops;
+
   /// Returns a shallow copy of this [Trip]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -81,6 +92,7 @@ abstract class Trip implements _i1.SerializableModel {
     String? polyline,
     String? preferences,
     int? totalDurationSeconds,
+    List<_i2.Stop>? stops,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -94,6 +106,7 @@ abstract class Trip implements _i1.SerializableModel {
       'polyline': polyline,
       if (preferences != null) 'preferences': preferences,
       'totalDurationSeconds': totalDurationSeconds,
+      if (stops != null) 'stops': stops?.toJson(valueToJson: (v) => v.toJson()),
     };
   }
 
@@ -115,6 +128,7 @@ class _TripImpl extends Trip {
     required String polyline,
     String? preferences,
     required int totalDurationSeconds,
+    List<_i2.Stop>? stops,
   }) : super._(
          id: id,
          description: description,
@@ -124,6 +138,7 @@ class _TripImpl extends Trip {
          polyline: polyline,
          preferences: preferences,
          totalDurationSeconds: totalDurationSeconds,
+         stops: stops,
        );
 
   /// Returns a shallow copy of this [Trip]
@@ -139,6 +154,7 @@ class _TripImpl extends Trip {
     String? polyline,
     Object? preferences = _Undefined,
     int? totalDurationSeconds,
+    Object? stops = _Undefined,
   }) {
     return Trip(
       id: id is int? ? id : this.id,
@@ -149,6 +165,9 @@ class _TripImpl extends Trip {
       polyline: polyline ?? this.polyline,
       preferences: preferences is String? ? preferences : this.preferences,
       totalDurationSeconds: totalDurationSeconds ?? this.totalDurationSeconds,
+      stops: stops is List<_i2.Stop>?
+          ? stops
+          : this.stops?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

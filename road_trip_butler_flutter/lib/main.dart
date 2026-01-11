@@ -1,5 +1,6 @@
 import 'package:road_trip_butler_client/road_trip_butler_client.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import 'dart:io';
@@ -39,8 +40,8 @@ void main() async {
   // defaults to http://$localhost:8080/ if not found.
   String serverUrl = await getServerUrl();
 
-  if (serverUrl == 'http://localhost:8080/') {
-    serverUrl = 'http://${getSmartDefaultHost()}:8080/';
+  if (serverUrl.contains('localhost')) {
+    serverUrl = serverUrl.replaceAll('localhost', getSmartDefaultHost());
   }
 
   client = Client(serverUrl)
@@ -61,6 +62,14 @@ class MyApp extends StatelessWidget {
       title: 'Serverpod Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const MyHomePage(title: 'Serverpod Example'),
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: {
+          PointerDeviceKind.mouse,
+          PointerDeviceKind.touch,
+          PointerDeviceKind.stylus,
+          PointerDeviceKind.unknown,
+        },
+      ),
     );
   }
 }

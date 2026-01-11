@@ -1,10 +1,11 @@
 class: Trip
 table: trip
 fields:
-  description: String          # e.g., "Austin to Santa Fe"
+  description: String
   startAddress: String
   endAddress: String
   departureTime: DateTime
-  polyline: String             # The long string from Google Routes
-  preferences: String?         # e.g., "Vegetarian, local flare"
+  polyline: String
+  preferences: String?
   totalDurationSeconds: int
+  stops: List<Stop>?

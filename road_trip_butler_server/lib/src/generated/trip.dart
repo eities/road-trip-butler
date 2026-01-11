@@ -11,6 +11,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
+import 'stop.dart' as _i2;
+import 'package:road_trip_butler_server/src/generated/protocol.dart' as _i3;
 
 abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   Trip._({
@@ -22,6 +24,7 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     required this.polyline,
     this.preferences,
     required this.totalDurationSeconds,
+    this.stops,
   });
 
   factory Trip({
@@ -33,6 +36,7 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     required String polyline,
     String? preferences,
     required int totalDurationSeconds,
+    List<_i2.Stop>? stops,
   }) = _TripImpl;
 
   factory Trip.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -47,6 +51,11 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       polyline: jsonSerialization['polyline'] as String,
       preferences: jsonSerialization['preferences'] as String?,
       totalDurationSeconds: jsonSerialization['totalDurationSeconds'] as int,
+      stops: jsonSerialization['stops'] == null
+          ? null
+          : _i3.Protocol().deserialize<List<_i2.Stop>>(
+              jsonSerialization['stops'],
+            ),
     );
   }
 
@@ -71,6 +80,8 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
 
   int totalDurationSeconds;
 
+  List<_i2.Stop>? stops;
+
   @override
   _i1.Table<int?> get table => t;
 
@@ -86,6 +97,7 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     String? polyline,
     String? preferences,
     int? totalDurationSeconds,
+    List<_i2.Stop>? stops,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -99,6 +111,7 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       'polyline': polyline,
       if (preferences != null) 'preferences': preferences,
       'totalDurationSeconds': totalDurationSeconds,
+      if (stops != null) 'stops': stops?.toJson(valueToJson: (v) => v.toJson()),
     };
   }
 
@@ -114,6 +127,8 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       'polyline': polyline,
       if (preferences != null) 'preferences': preferences,
       'totalDurationSeconds': totalDurationSeconds,
+      if (stops != null)
+        'stops': stops?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
   }
 
@@ -159,6 +174,7 @@ class _TripImpl extends Trip {
     required String polyline,
     String? preferences,
     required int totalDurationSeconds,
+    List<_i2.Stop>? stops,
   }) : super._(
          id: id,
          description: description,
@@ -168,6 +184,7 @@ class _TripImpl extends Trip {
          polyline: polyline,
          preferences: preferences,
          totalDurationSeconds: totalDurationSeconds,
+         stops: stops,
        );
 
   /// Returns a shallow copy of this [Trip]
@@ -183,6 +200,7 @@ class _TripImpl extends Trip {
     String? polyline,
     Object? preferences = _Undefined,
     int? totalDurationSeconds,
+    Object? stops = _Undefined,
   }) {
     return Trip(
       id: id is int? ? id : this.id,
@@ -193,6 +211,9 @@ class _TripImpl extends Trip {
       polyline: polyline ?? this.polyline,
       preferences: preferences is String? ? preferences : this.preferences,
       totalDurationSeconds: totalDurationSeconds ?? this.totalDurationSeconds,
+      stops: stops is List<_i2.Stop>?
+          ? stops
+          : this.stops?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }
@@ -235,6 +256,13 @@ class TripUpdateTable extends _i1.UpdateTable<TripTable> {
     table.totalDurationSeconds,
     value,
   );
+
+  _i1.ColumnValue<List<_i2.Stop>, List<_i2.Stop>> stops(
+    List<_i2.Stop>? value,
+  ) => _i1.ColumnValue(
+    table.stops,
+    value,
+  );
 }
 
 class TripTable extends _i1.Table<int?> {
@@ -268,6 +296,10 @@ class TripTable extends _i1.Table<int?> {
       'totalDurationSeconds',
       this,
     );
+    stops = _i1.ColumnSerializable<List<_i2.Stop>>(
+      'stops',
+      this,
+    );
   }
 
   late final TripUpdateTable updateTable;
@@ -286,6 +318,8 @@ class TripTable extends _i1.Table<int?> {
 
   late final _i1.ColumnInt totalDurationSeconds;
 
+  late final _i1.ColumnSerializable<List<_i2.Stop>> stops;
+
   @override
   List<_i1.Column> get columns => [
     id,
@@ -296,6 +330,7 @@ class TripTable extends _i1.Table<int?> {
     polyline,
     preferences,
     totalDurationSeconds,
+    stops,
   ];
 }
 

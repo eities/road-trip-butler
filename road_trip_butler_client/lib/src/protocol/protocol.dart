@@ -91,6 +91,15 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i6.Trip?>()) {
       return (data != null ? _i6.Trip.fromJson(data) : null) as T;
     }
+    if (t == List<_i4.Stop>) {
+      return (data as List).map((e) => deserialize<_i4.Stop>(e)).toList() as T;
+    }
+    if (t == _i1.getType<List<_i4.Stop>?>()) {
+      return (data != null
+              ? (data as List).map((e) => deserialize<_i4.Stop>(e)).toList()
+              : null)
+          as T;
+    }
     try {
       return _i7.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}

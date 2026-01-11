@@ -17,8 +17,10 @@ import 'stop_status.dart' as _i3;
 abstract class Stop implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   Stop._({
     this.id,
+    required this.stopId,
     required this.tripId,
     required this.name,
+    required this.slotTitle,
     required this.address,
     required this.latitude,
     required this.longitude,
@@ -32,8 +34,10 @@ abstract class Stop implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
 
   factory Stop({
     int? id,
+    required int stopId,
     required int tripId,
     required String name,
+    required String slotTitle,
     required String address,
     required double latitude,
     required double longitude,
@@ -48,8 +52,10 @@ abstract class Stop implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   factory Stop.fromJson(Map<String, dynamic> jsonSerialization) {
     return Stop(
       id: jsonSerialization['id'] as int?,
+      stopId: jsonSerialization['stopId'] as int,
       tripId: jsonSerialization['tripId'] as int,
       name: jsonSerialization['name'] as String,
+      slotTitle: jsonSerialization['slotTitle'] as String,
       address: jsonSerialization['address'] as String,
       latitude: (jsonSerialization['latitude'] as num).toDouble(),
       longitude: (jsonSerialization['longitude'] as num).toDouble(),
@@ -73,9 +79,13 @@ abstract class Stop implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   @override
   int? id;
 
+  int stopId;
+
   int tripId;
 
   String name;
+
+  String slotTitle;
 
   String address;
 
@@ -103,8 +113,10 @@ abstract class Stop implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   @_i1.useResult
   Stop copyWith({
     int? id,
+    int? stopId,
     int? tripId,
     String? name,
+    String? slotTitle,
     String? address,
     double? latitude,
     double? longitude,
@@ -120,8 +132,10 @@ abstract class Stop implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     return {
       '__className__': 'Stop',
       if (id != null) 'id': id,
+      'stopId': stopId,
       'tripId': tripId,
       'name': name,
+      'slotTitle': slotTitle,
       'address': address,
       'latitude': latitude,
       'longitude': longitude,
@@ -139,8 +153,10 @@ abstract class Stop implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     return {
       '__className__': 'Stop',
       if (id != null) 'id': id,
+      'stopId': stopId,
       'tripId': tripId,
       'name': name,
+      'slotTitle': slotTitle,
       'address': address,
       'latitude': latitude,
       'longitude': longitude,
@@ -188,8 +204,10 @@ class _Undefined {}
 class _StopImpl extends Stop {
   _StopImpl({
     int? id,
+    required int stopId,
     required int tripId,
     required String name,
+    required String slotTitle,
     required String address,
     required double latitude,
     required double longitude,
@@ -201,8 +219,10 @@ class _StopImpl extends Stop {
     required DateTime estimatedArrivalTime,
   }) : super._(
          id: id,
+         stopId: stopId,
          tripId: tripId,
          name: name,
+         slotTitle: slotTitle,
          address: address,
          latitude: latitude,
          longitude: longitude,
@@ -220,8 +240,10 @@ class _StopImpl extends Stop {
   @override
   Stop copyWith({
     Object? id = _Undefined,
+    int? stopId,
     int? tripId,
     String? name,
+    String? slotTitle,
     String? address,
     double? latitude,
     double? longitude,
@@ -234,8 +256,10 @@ class _StopImpl extends Stop {
   }) {
     return Stop(
       id: id is int? ? id : this.id,
+      stopId: stopId ?? this.stopId,
       tripId: tripId ?? this.tripId,
       name: name ?? this.name,
+      slotTitle: slotTitle ?? this.slotTitle,
       address: address ?? this.address,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
@@ -252,6 +276,11 @@ class _StopImpl extends Stop {
 class StopUpdateTable extends _i1.UpdateTable<StopTable> {
   StopUpdateTable(super.table);
 
+  _i1.ColumnValue<int, int> stopId(int value) => _i1.ColumnValue(
+    table.stopId,
+    value,
+  );
+
   _i1.ColumnValue<int, int> tripId(int value) => _i1.ColumnValue(
     table.tripId,
     value,
@@ -259,6 +288,11 @@ class StopUpdateTable extends _i1.UpdateTable<StopTable> {
 
   _i1.ColumnValue<String, String> name(String value) => _i1.ColumnValue(
     table.name,
+    value,
+  );
+
+  _i1.ColumnValue<String, String> slotTitle(String value) => _i1.ColumnValue(
+    table.slotTitle,
     value,
   );
 
@@ -316,12 +350,20 @@ class StopUpdateTable extends _i1.UpdateTable<StopTable> {
 class StopTable extends _i1.Table<int?> {
   StopTable({super.tableRelation}) : super(tableName: 'stop') {
     updateTable = StopUpdateTable(this);
+    stopId = _i1.ColumnInt(
+      'stopId',
+      this,
+    );
     tripId = _i1.ColumnInt(
       'tripId',
       this,
     );
     name = _i1.ColumnString(
       'name',
+      this,
+    );
+    slotTitle = _i1.ColumnString(
+      'slotTitle',
       this,
     );
     address = _i1.ColumnString(
@@ -366,9 +408,13 @@ class StopTable extends _i1.Table<int?> {
 
   late final StopUpdateTable updateTable;
 
+  late final _i1.ColumnInt stopId;
+
   late final _i1.ColumnInt tripId;
 
   late final _i1.ColumnString name;
+
+  late final _i1.ColumnString slotTitle;
 
   late final _i1.ColumnString address;
 
@@ -391,8 +437,10 @@ class StopTable extends _i1.Table<int?> {
   @override
   List<_i1.Column> get columns => [
     id,
+    stopId,
     tripId,
     name,
+    slotTitle,
     address,
     latitude,
     longitude,
