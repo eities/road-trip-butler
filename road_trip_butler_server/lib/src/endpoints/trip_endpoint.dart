@@ -3,8 +3,58 @@ import 'package:serverpod/serverpod.dart';
 import 'package:dartantic_ai/dartantic_ai.dart';
 import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:http/http.dart' as http;
 
 class TripEndpoint extends Endpoint {
+
+  Future<String> _fetchRoutePolyline(
+    Session session, 
+    String startAddress, 
+    String endAddress
+  ) async {
+    // 1. Get API Key from Serverpod passwords
+    final apiKey = session.passwords['googleMapsApiKey'];
+    if (apiKey == null) {
+      throw Exception('Google Maps API key is missing in passwords.yaml');
+    }
+
+    // 2. Construct the URL (Uri.https handles encoding spaces/special characters)
+    final url = Uri.https('maps.googleapis.com', '/maps/api/directions/json', {
+      'origin': startAddress,
+      'destination': endAddress,
+      'key': apiKey,
+      'mode': 'driving',
+    });
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to connect to Google API: ${response.statusCode}');
+      }
+
+      final data = jsonDecode(response.body);
+
+      // 3. Error Handling for Google-specific status codes
+      if (data['status'] == 'ZERO_RESULTS') {
+        throw Exception('No route found between "$startAddress" and "$endAddress".');
+      } else if (data['status'] != 'OK') {
+        throw Exception('Google Directions API error: ${data['status']} - ${data['error_message'] ?? ''}');
+      }
+
+      // 4. Extract overview_polyline
+      // Routes is an array, overview_polyline is inside the first route
+      final String polyline = data['routes'][0]['overview_polyline']['points'];
+      
+      return polyline;
+    } catch (e) {
+      session.log('Error fetching polyline: $e', level: LogLevel.error);
+      rethrow; // Pass the error up to the caller
+    }
+  }
+
+
+
   Future<Trip> createTrip(Session session, {
     required String startAddress,
     required String endAddress,
@@ -41,13 +91,14 @@ class TripEndpoint extends Endpoint {
     - category: Use single-word descriptors like 'coffee', 'sightseeing', 'dining', 'park'.
     """;
 
-    String dummyPolyline = "mzqwHvi|uS_pA_u@_vBst@_uAovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB";
+    final polyline = await _fetchRoutePolyline(session, startAddress, endAddress);
+    print(polyline);
     var trip = await Trip.db.insertRow(session, Trip(
       description: 'Trip from $startAddress to $endAddress',
       startAddress: startAddress,
       endAddress: endAddress,
       departureTime: departureTime,
-      polyline: dummyPolyline,
+      polyline: polyline,
       preferences: preferences,
       totalDurationSeconds: 0,
       personality: personality,
@@ -92,14 +143,7 @@ class TripEndpoint extends Endpoint {
 
     // 4. Parse & Save
     final List<dynamic> rawStops = jsonDecode(response.text!);
-    
-    // DEBUG PRINT:
-    print("--- GEMINI DEBUG ---");
-    print("Total stops generated: ${rawStops.length}");
-    for (var i = 0; i < rawStops.length; i++) {
-      print("Stop $i: ${rawStops[i]['name']} (Chapter: ${rawStops[i]['slotTitle']})");
-    }
-    print("--------------------");
+  
 
     for (var data in rawStops) {
       await Stop.db.insertRow(session, Stop(
