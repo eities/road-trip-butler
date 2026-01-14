@@ -21,9 +21,10 @@ abstract class Trip implements _i1.SerializableModel {
     required this.startAddress,
     required this.endAddress,
     required this.departureTime,
+    required this.personality,
     required this.polyline,
     this.preferences,
-    required this.totalDurationSeconds,
+    this.totalDurationSeconds,
     this.stops,
   });
 
@@ -33,9 +34,10 @@ abstract class Trip implements _i1.SerializableModel {
     required String startAddress,
     required String endAddress,
     required DateTime departureTime,
+    required String personality,
     required String polyline,
     String? preferences,
-    required int totalDurationSeconds,
+    int? totalDurationSeconds,
     List<_i2.Stop>? stops,
   }) = _TripImpl;
 
@@ -48,9 +50,10 @@ abstract class Trip implements _i1.SerializableModel {
       departureTime: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['departureTime'],
       ),
+      personality: jsonSerialization['personality'] as String,
       polyline: jsonSerialization['polyline'] as String,
       preferences: jsonSerialization['preferences'] as String?,
-      totalDurationSeconds: jsonSerialization['totalDurationSeconds'] as int,
+      totalDurationSeconds: jsonSerialization['totalDurationSeconds'] as int?,
       stops: jsonSerialization['stops'] == null
           ? null
           : _i3.Protocol().deserialize<List<_i2.Stop>>(
@@ -72,11 +75,13 @@ abstract class Trip implements _i1.SerializableModel {
 
   DateTime departureTime;
 
+  String personality;
+
   String polyline;
 
   String? preferences;
 
-  int totalDurationSeconds;
+  int? totalDurationSeconds;
 
   List<_i2.Stop>? stops;
 
@@ -89,6 +94,7 @@ abstract class Trip implements _i1.SerializableModel {
     String? startAddress,
     String? endAddress,
     DateTime? departureTime,
+    String? personality,
     String? polyline,
     String? preferences,
     int? totalDurationSeconds,
@@ -103,9 +109,11 @@ abstract class Trip implements _i1.SerializableModel {
       'startAddress': startAddress,
       'endAddress': endAddress,
       'departureTime': departureTime.toJson(),
+      'personality': personality,
       'polyline': polyline,
       if (preferences != null) 'preferences': preferences,
-      'totalDurationSeconds': totalDurationSeconds,
+      if (totalDurationSeconds != null)
+        'totalDurationSeconds': totalDurationSeconds,
       if (stops != null) 'stops': stops?.toJson(valueToJson: (v) => v.toJson()),
     };
   }
@@ -125,9 +133,10 @@ class _TripImpl extends Trip {
     required String startAddress,
     required String endAddress,
     required DateTime departureTime,
+    required String personality,
     required String polyline,
     String? preferences,
-    required int totalDurationSeconds,
+    int? totalDurationSeconds,
     List<_i2.Stop>? stops,
   }) : super._(
          id: id,
@@ -135,6 +144,7 @@ class _TripImpl extends Trip {
          startAddress: startAddress,
          endAddress: endAddress,
          departureTime: departureTime,
+         personality: personality,
          polyline: polyline,
          preferences: preferences,
          totalDurationSeconds: totalDurationSeconds,
@@ -151,9 +161,10 @@ class _TripImpl extends Trip {
     String? startAddress,
     String? endAddress,
     DateTime? departureTime,
+    String? personality,
     String? polyline,
     Object? preferences = _Undefined,
-    int? totalDurationSeconds,
+    Object? totalDurationSeconds = _Undefined,
     Object? stops = _Undefined,
   }) {
     return Trip(
@@ -162,9 +173,12 @@ class _TripImpl extends Trip {
       startAddress: startAddress ?? this.startAddress,
       endAddress: endAddress ?? this.endAddress,
       departureTime: departureTime ?? this.departureTime,
+      personality: personality ?? this.personality,
       polyline: polyline ?? this.polyline,
       preferences: preferences is String? ? preferences : this.preferences,
-      totalDurationSeconds: totalDurationSeconds ?? this.totalDurationSeconds,
+      totalDurationSeconds: totalDurationSeconds is int?
+          ? totalDurationSeconds
+          : this.totalDurationSeconds,
       stops: stops is List<_i2.Stop>?
           ? stops
           : this.stops?.map((e0) => e0.copyWith()).toList(),

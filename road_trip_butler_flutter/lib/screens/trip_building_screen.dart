@@ -24,12 +24,11 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeMapData();
+    //_initializeMapData();
   }
 
   void _initializeMapData() {
     // 1. Decode the Polyline
-    if (widget.trip.polyline.isNotEmpty) {
       final points = _decodePolyline(widget.trip.polyline);
       _polylines.add(
         Polyline(
@@ -39,7 +38,7 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
           width: 5,
         ),
       );
-    }
+    
 
     // 2. Add Markers for stops
     // Note: Assuming 'stops' exists on Trip and has lat/lng fields based on your description
@@ -134,18 +133,18 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
             expandedHeight: 300.0,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              background: GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target: widget.trip.stops?.isNotEmpty == true
-                      ? LatLng(widget.trip.stops!.first.latitude, widget.trip.stops!.first.longitude)
-                      : const LatLng(37.7749, -122.4194),
-                  zoom: 10,
-                ),
-                polylines: _polylines,
-                markers: _markers,
-                zoomControlsEnabled: false,
-                onMapCreated: (controller) => _mapController = controller,
-              ),
+              // background: GoogleMap(
+              //   initialCameraPosition: CameraPosition(
+              //     target: widget.trip.stops?.isNotEmpty == true
+              //         ? LatLng(widget.trip.stops!.first.latitude, widget.trip.stops!.first.longitude)
+              //         : const LatLng(37.7749, -122.4194),
+              //     zoom: 10,
+              //   ),
+              //   //polylines: _polylines,
+              //   //markers: _markers,
+              //   zoomControlsEnabled: false,
+              //   onMapCreated: (controller) => _mapController = controller,
+              // ),
             ),
           ),
 
@@ -171,7 +170,7 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
                         itemCount: stopsForSlot.length,
                         itemBuilder: (context, pageIndex) {
                           final stop = stopsForSlot[pageIndex];
-                          final isSelected = _selectedStopIds.contains(stop.stopId);
+                          final isSelected = _selectedStopIds.contains(stop.id);
 
                           return Card(
                             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),

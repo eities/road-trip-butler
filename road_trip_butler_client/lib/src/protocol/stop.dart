@@ -17,7 +17,6 @@ import 'stop_status.dart' as _i3;
 abstract class Stop implements _i1.SerializableModel {
   Stop._({
     this.id,
-    required this.stopId,
     required this.tripId,
     required this.name,
     required this.slotTitle,
@@ -34,7 +33,6 @@ abstract class Stop implements _i1.SerializableModel {
 
   factory Stop({
     int? id,
-    required int stopId,
     required int tripId,
     required String name,
     required String slotTitle,
@@ -52,7 +50,6 @@ abstract class Stop implements _i1.SerializableModel {
   factory Stop.fromJson(Map<String, dynamic> jsonSerialization) {
     return Stop(
       id: jsonSerialization['id'] as int?,
-      stopId: jsonSerialization['stopId'] as int,
       tripId: jsonSerialization['tripId'] as int,
       name: jsonSerialization['name'] as String,
       slotTitle: jsonSerialization['slotTitle'] as String,
@@ -76,8 +73,6 @@ abstract class Stop implements _i1.SerializableModel {
   /// database or if it has been fetched from the database. Otherwise,
   /// the id will be null.
   int? id;
-
-  int stopId;
 
   int tripId;
 
@@ -108,7 +103,6 @@ abstract class Stop implements _i1.SerializableModel {
   @_i1.useResult
   Stop copyWith({
     int? id,
-    int? stopId,
     int? tripId,
     String? name,
     String? slotTitle,
@@ -127,7 +121,6 @@ abstract class Stop implements _i1.SerializableModel {
     return {
       '__className__': 'Stop',
       if (id != null) 'id': id,
-      'stopId': stopId,
       'tripId': tripId,
       'name': name,
       'slotTitle': slotTitle,
@@ -154,7 +147,6 @@ class _Undefined {}
 class _StopImpl extends Stop {
   _StopImpl({
     int? id,
-    required int stopId,
     required int tripId,
     required String name,
     required String slotTitle,
@@ -169,7 +161,6 @@ class _StopImpl extends Stop {
     required DateTime estimatedArrivalTime,
   }) : super._(
          id: id,
-         stopId: stopId,
          tripId: tripId,
          name: name,
          slotTitle: slotTitle,
@@ -190,7 +181,6 @@ class _StopImpl extends Stop {
   @override
   Stop copyWith({
     Object? id = _Undefined,
-    int? stopId,
     int? tripId,
     String? name,
     String? slotTitle,
@@ -206,7 +196,6 @@ class _StopImpl extends Stop {
   }) {
     return Stop(
       id: id is int? ? id : this.id,
-      stopId: stopId ?? this.stopId,
       tripId: tripId ?? this.tripId,
       name: name ?? this.name,
       slotTitle: slotTitle ?? this.slotTitle,

@@ -8,6 +8,7 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
@@ -21,9 +22,10 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     required this.startAddress,
     required this.endAddress,
     required this.departureTime,
+    required this.personality,
     required this.polyline,
     this.preferences,
-    required this.totalDurationSeconds,
+    this.totalDurationSeconds,
     this.stops,
   });
 
@@ -33,9 +35,10 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     required String startAddress,
     required String endAddress,
     required DateTime departureTime,
+    required String personality,
     required String polyline,
     String? preferences,
-    required int totalDurationSeconds,
+    int? totalDurationSeconds,
     List<_i2.Stop>? stops,
   }) = _TripImpl;
 
@@ -48,9 +51,10 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       departureTime: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['departureTime'],
       ),
+      personality: jsonSerialization['personality'] as String,
       polyline: jsonSerialization['polyline'] as String,
       preferences: jsonSerialization['preferences'] as String?,
-      totalDurationSeconds: jsonSerialization['totalDurationSeconds'] as int,
+      totalDurationSeconds: jsonSerialization['totalDurationSeconds'] as int?,
       stops: jsonSerialization['stops'] == null
           ? null
           : _i3.Protocol().deserialize<List<_i2.Stop>>(
@@ -74,11 +78,13 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
 
   DateTime departureTime;
 
+  String personality;
+
   String polyline;
 
   String? preferences;
 
-  int totalDurationSeconds;
+  int? totalDurationSeconds;
 
   List<_i2.Stop>? stops;
 
@@ -94,6 +100,7 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     String? startAddress,
     String? endAddress,
     DateTime? departureTime,
+    String? personality,
     String? polyline,
     String? preferences,
     int? totalDurationSeconds,
@@ -108,9 +115,11 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       'startAddress': startAddress,
       'endAddress': endAddress,
       'departureTime': departureTime.toJson(),
+      'personality': personality,
       'polyline': polyline,
       if (preferences != null) 'preferences': preferences,
-      'totalDurationSeconds': totalDurationSeconds,
+      if (totalDurationSeconds != null)
+        'totalDurationSeconds': totalDurationSeconds,
       if (stops != null) 'stops': stops?.toJson(valueToJson: (v) => v.toJson()),
     };
   }
@@ -124,16 +133,18 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       'startAddress': startAddress,
       'endAddress': endAddress,
       'departureTime': departureTime.toJson(),
+      'personality': personality,
       'polyline': polyline,
       if (preferences != null) 'preferences': preferences,
-      'totalDurationSeconds': totalDurationSeconds,
+      if (totalDurationSeconds != null)
+        'totalDurationSeconds': totalDurationSeconds,
       if (stops != null)
         'stops': stops?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
   }
 
-  static TripInclude include() {
-    return TripInclude._();
+  static TripInclude include({_i2.StopIncludeList? stops}) {
+    return TripInclude._(stops: stops);
   }
 
   static TripIncludeList includeList({
@@ -171,9 +182,10 @@ class _TripImpl extends Trip {
     required String startAddress,
     required String endAddress,
     required DateTime departureTime,
+    required String personality,
     required String polyline,
     String? preferences,
-    required int totalDurationSeconds,
+    int? totalDurationSeconds,
     List<_i2.Stop>? stops,
   }) : super._(
          id: id,
@@ -181,6 +193,7 @@ class _TripImpl extends Trip {
          startAddress: startAddress,
          endAddress: endAddress,
          departureTime: departureTime,
+         personality: personality,
          polyline: polyline,
          preferences: preferences,
          totalDurationSeconds: totalDurationSeconds,
@@ -197,9 +210,10 @@ class _TripImpl extends Trip {
     String? startAddress,
     String? endAddress,
     DateTime? departureTime,
+    String? personality,
     String? polyline,
     Object? preferences = _Undefined,
-    int? totalDurationSeconds,
+    Object? totalDurationSeconds = _Undefined,
     Object? stops = _Undefined,
   }) {
     return Trip(
@@ -208,9 +222,12 @@ class _TripImpl extends Trip {
       startAddress: startAddress ?? this.startAddress,
       endAddress: endAddress ?? this.endAddress,
       departureTime: departureTime ?? this.departureTime,
+      personality: personality ?? this.personality,
       polyline: polyline ?? this.polyline,
       preferences: preferences is String? ? preferences : this.preferences,
-      totalDurationSeconds: totalDurationSeconds ?? this.totalDurationSeconds,
+      totalDurationSeconds: totalDurationSeconds is int?
+          ? totalDurationSeconds
+          : this.totalDurationSeconds,
       stops: stops is List<_i2.Stop>?
           ? stops
           : this.stops?.map((e0) => e0.copyWith()).toList(),
@@ -242,6 +259,11 @@ class TripUpdateTable extends _i1.UpdateTable<TripTable> {
         value,
       );
 
+  _i1.ColumnValue<String, String> personality(String value) => _i1.ColumnValue(
+    table.personality,
+    value,
+  );
+
   _i1.ColumnValue<String, String> polyline(String value) => _i1.ColumnValue(
     table.polyline,
     value,
@@ -252,15 +274,8 @@ class TripUpdateTable extends _i1.UpdateTable<TripTable> {
     value,
   );
 
-  _i1.ColumnValue<int, int> totalDurationSeconds(int value) => _i1.ColumnValue(
+  _i1.ColumnValue<int, int> totalDurationSeconds(int? value) => _i1.ColumnValue(
     table.totalDurationSeconds,
-    value,
-  );
-
-  _i1.ColumnValue<List<_i2.Stop>, List<_i2.Stop>> stops(
-    List<_i2.Stop>? value,
-  ) => _i1.ColumnValue(
-    table.stops,
     value,
   );
 }
@@ -284,6 +299,10 @@ class TripTable extends _i1.Table<int?> {
       'departureTime',
       this,
     );
+    personality = _i1.ColumnString(
+      'personality',
+      this,
+    );
     polyline = _i1.ColumnString(
       'polyline',
       this,
@@ -294,10 +313,6 @@ class TripTable extends _i1.Table<int?> {
     );
     totalDurationSeconds = _i1.ColumnInt(
       'totalDurationSeconds',
-      this,
-    );
-    stops = _i1.ColumnSerializable<List<_i2.Stop>>(
-      'stops',
       this,
     );
   }
@@ -312,13 +327,49 @@ class TripTable extends _i1.Table<int?> {
 
   late final _i1.ColumnDateTime departureTime;
 
+  late final _i1.ColumnString personality;
+
   late final _i1.ColumnString polyline;
 
   late final _i1.ColumnString preferences;
 
   late final _i1.ColumnInt totalDurationSeconds;
 
-  late final _i1.ColumnSerializable<List<_i2.Stop>> stops;
+  _i2.StopTable? ___stops;
+
+  _i1.ManyRelation<_i2.StopTable>? _stops;
+
+  _i2.StopTable get __stops {
+    if (___stops != null) return ___stops!;
+    ___stops = _i1.createRelationTable(
+      relationFieldName: '__stops',
+      field: Trip.t.id,
+      foreignField: _i2.Stop.t.tripId,
+      tableRelation: tableRelation,
+      createTable: (foreignTableRelation) =>
+          _i2.StopTable(tableRelation: foreignTableRelation),
+    );
+    return ___stops!;
+  }
+
+  _i1.ManyRelation<_i2.StopTable> get stops {
+    if (_stops != null) return _stops!;
+    var relationTable = _i1.createRelationTable(
+      relationFieldName: 'stops',
+      field: Trip.t.id,
+      foreignField: _i2.Stop.t.tripId,
+      tableRelation: tableRelation,
+      createTable: (foreignTableRelation) =>
+          _i2.StopTable(tableRelation: foreignTableRelation),
+    );
+    _stops = _i1.ManyRelation<_i2.StopTable>(
+      tableWithRelations: relationTable,
+      table: _i2.StopTable(
+        tableRelation: relationTable.tableRelation!.lastRelation,
+      ),
+    );
+    return _stops!;
+  }
 
   @override
   List<_i1.Column> get columns => [
@@ -327,18 +378,30 @@ class TripTable extends _i1.Table<int?> {
     startAddress,
     endAddress,
     departureTime,
+    personality,
     polyline,
     preferences,
     totalDurationSeconds,
-    stops,
   ];
+
+  @override
+  _i1.Table? getRelationTable(String relationField) {
+    if (relationField == 'stops') {
+      return __stops;
+    }
+    return null;
+  }
 }
 
 class TripInclude extends _i1.IncludeObject {
-  TripInclude._();
+  TripInclude._({_i2.StopIncludeList? stops}) {
+    _stops = stops;
+  }
+
+  _i2.StopIncludeList? _stops;
 
   @override
-  Map<String, _i1.Include?> get includes => {};
+  Map<String, _i1.Include?> get includes => {'stops': _stops};
 
   @override
   _i1.Table<int?> get table => Trip.t;
@@ -366,6 +429,10 @@ class TripIncludeList extends _i1.IncludeList {
 
 class TripRepository {
   const TripRepository._();
+
+  final attach = const TripAttachRepository._();
+
+  final attachRow = const TripAttachRowRepository._();
 
   /// Returns a list of [Trip]s matching the given query parameters.
   ///
@@ -398,6 +465,7 @@ class TripRepository {
     bool orderDescending = false,
     _i1.OrderByListBuilder<TripTable>? orderByList,
     _i1.Transaction? transaction,
+    TripInclude? include,
   }) async {
     return session.db.find<Trip>(
       where: where?.call(Trip.t),
@@ -407,6 +475,7 @@ class TripRepository {
       limit: limit,
       offset: offset,
       transaction: transaction,
+      include: include,
     );
   }
 
@@ -435,6 +504,7 @@ class TripRepository {
     bool orderDescending = false,
     _i1.OrderByListBuilder<TripTable>? orderByList,
     _i1.Transaction? transaction,
+    TripInclude? include,
   }) async {
     return session.db.findFirstRow<Trip>(
       where: where?.call(Trip.t),
@@ -443,6 +513,7 @@ class TripRepository {
       orderDescending: orderDescending,
       offset: offset,
       transaction: transaction,
+      include: include,
     );
   }
 
@@ -451,10 +522,12 @@ class TripRepository {
     _i1.Session session,
     int id, {
     _i1.Transaction? transaction,
+    TripInclude? include,
   }) async {
     return session.db.findById<Trip>(
       id,
       transaction: transaction,
+      include: include,
     );
   }
 
@@ -612,6 +685,60 @@ class TripRepository {
     return session.db.count<Trip>(
       where: where?.call(Trip.t),
       limit: limit,
+      transaction: transaction,
+    );
+  }
+}
+
+class TripAttachRepository {
+  const TripAttachRepository._();
+
+  /// Creates a relation between this [Trip] and the given [Stop]s
+  /// by setting each [Stop]'s foreign key `tripId` to refer to this [Trip].
+  Future<void> stops(
+    _i1.Session session,
+    Trip trip,
+    List<_i2.Stop> stop, {
+    _i1.Transaction? transaction,
+  }) async {
+    if (stop.any((e) => e.id == null)) {
+      throw ArgumentError.notNull('stop.id');
+    }
+    if (trip.id == null) {
+      throw ArgumentError.notNull('trip.id');
+    }
+
+    var $stop = stop.map((e) => e.copyWith(tripId: trip.id)).toList();
+    await session.db.update<_i2.Stop>(
+      $stop,
+      columns: [_i2.Stop.t.tripId],
+      transaction: transaction,
+    );
+  }
+}
+
+class TripAttachRowRepository {
+  const TripAttachRowRepository._();
+
+  /// Creates a relation between this [Trip] and the given [Stop]
+  /// by setting the [Stop]'s foreign key `tripId` to refer to this [Trip].
+  Future<void> stops(
+    _i1.Session session,
+    Trip trip,
+    _i2.Stop stop, {
+    _i1.Transaction? transaction,
+  }) async {
+    if (stop.id == null) {
+      throw ArgumentError.notNull('stop.id');
+    }
+    if (trip.id == null) {
+      throw ArgumentError.notNull('trip.id');
+    }
+
+    var $stop = stop.copyWith(tripId: trip.id);
+    await session.db.updateRow<_i2.Stop>(
+      $stop,
+      columns: [_i2.Stop.t.tripId],
       transaction: transaction,
     );
   }

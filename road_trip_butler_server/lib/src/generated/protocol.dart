@@ -49,12 +49,6 @@ class Protocol extends _i1.SerializationManagerServer {
           columnDefault: 'nextval(\'stop_id_seq\'::regclass)',
         ),
         _i2.ColumnDefinition(
-          name: 'stopId',
-          columnType: _i2.ColumnType.bigint,
-          isNullable: false,
-          dartType: 'int',
-        ),
-        _i2.ColumnDefinition(
           name: 'tripId',
           columnType: _i2.ColumnType.bigint,
           isNullable: false,
@@ -127,7 +121,18 @@ class Protocol extends _i1.SerializationManagerServer {
           dartType: 'DateTime',
         ),
       ],
-      foreignKeys: [],
+      foreignKeys: [
+        _i2.ForeignKeyDefinition(
+          constraintName: 'stop_fk_0',
+          columns: ['tripId'],
+          referenceTable: 'trip',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _i2.ForeignKeyAction.noAction,
+          onDelete: _i2.ForeignKeyAction.noAction,
+          matchType: null,
+        ),
+      ],
       indexes: [
         _i2.IndexDefinition(
           indexName: 'stop_pkey',
@@ -183,6 +188,12 @@ class Protocol extends _i1.SerializationManagerServer {
           dartType: 'DateTime',
         ),
         _i2.ColumnDefinition(
+          name: 'personality',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
           name: 'polyline',
           columnType: _i2.ColumnType.text,
           isNullable: false,
@@ -197,14 +208,8 @@ class Protocol extends _i1.SerializationManagerServer {
         _i2.ColumnDefinition(
           name: 'totalDurationSeconds',
           columnType: _i2.ColumnType.bigint,
-          isNullable: false,
-          dartType: 'int',
-        ),
-        _i2.ColumnDefinition(
-          name: 'stops',
-          columnType: _i2.ColumnType.json,
           isNullable: true,
-          dartType: 'List<protocol:Stop>?',
+          dartType: 'int?',
         ),
       ],
       foreignKeys: [],

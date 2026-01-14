@@ -5,7 +5,8 @@ fields:
   startAddress: String
   endAddress: String
   departureTime: DateTime
+  personality: String
   polyline: String
   preferences: String?
-  totalDurationSeconds: int
-  stops: List<Stop>?
+  totalDurationSeconds: int?
+  stops: List<Stop>?, relation(name=trip_stops)

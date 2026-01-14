@@ -9,8 +9,11 @@ environment:
 dependencies:
   dartantic_ai: ^2.2.2
   dartantic_chat: ^0.1.0
+  google_generative_ai: ^0.4.7
   serverpod: 3.2.0
   serverpod_auth_idp_server: 3.2.0
+  google_maps_flutter: ^2.10.0
+  flutter_polyline_points: ^2.1.0
 
 dev_dependencies:
   lints: '>=3.0.0 <7.0.0'

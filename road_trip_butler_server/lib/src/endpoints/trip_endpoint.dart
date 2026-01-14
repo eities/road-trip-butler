@@ -1,199 +1,129 @@
 import 'package:road_trip_butler_server/src/generated/protocol.dart';
 import 'package:serverpod/serverpod.dart';
 import 'package:dartantic_ai/dartantic_ai.dart';
-import 'package:dartantic_chat/dartantic_chat.dart';
-
+import 'dart:convert';
+import 'package:google_generative_ai/google_generative_ai.dart';
 
 class TripEndpoint extends Endpoint {
-
   Future<Trip> createTrip(Session session, {
     required String startAddress,
     required String endAddress,
     required DateTime departureTime,
     required String personality,
-    required String preferences
+    required String preferences,
   }) async {
-    var trip = Trip(
+    // 1. Create the Trip
+    // A simplified route from Austin to Dallas along the I-35 corridor
+    final systemInstruction = """
+    You are the 'Road Trip Butler', a world-class travel concierge. 
+    Your goal is to curate a highly personalized journey between a start and end location.
+
+    PERSONALITY GUIDELINES:
+    - Adapt your 'butlerNote' to the user's chosen personality:
+      - If 'The Explorer', suggest the highest value stops, even if they are a slight detour or take a little longer; 
+      - if The Efficient', suggest high-value quick stops;
+      - If "The Family Aide" suggest family friendly stops;
+    - Be polite, insightful, and helpful.
+
+    LOGIC RULES:
+    - Chapters: Group stops into logical 'Chapters' (e.g., 'The Morning Caffeine Kick', 'The Local Legend Lunch').
+    - Stay between 2 - 4 chapters. Each meal time that the trip will span over will usually need a chapter. Usually 1 to 2 additional stops can occur between meal times.
+    - Provide 3 distinct options per Chapter so the user has choices. Each option should have the same chapter name which is put in the slotTitle field.
+    - Relevance: Only suggest stops that are reasonably near the route between the start and end points.
+    - Coordinates: Ensure latitude and longitude are precise for map rendering.
+    - LOGIC RULES:
+    - REQUIRED QUANTITY: You must generate exactly 3 unique options for every single Chapter. 
+    - TOTAL COUNT: If you have 4 chapters, the final JSON array must contain exactly 12 objects.
+    - GROUPING: Every stop in a group must share the EXACT same 'slotTitle' (e.g., stops 1, 2, and 3 all have 'Morning Caffeine Kick').
+    - UNIQUENESS: Each of the 3 options per chapter must be a geographically different location.
+    DATA CONSTRAINTS:
+    - priceLevel: Must be EXACTLY 'cheap', 'medium', or 'expensive'.
+    - category: Use single-word descriptors like 'coffee', 'sightseeing', 'dining', 'park'.
+    """;
+
+    String dummyPolyline = "mzqwHvi|uS_pA_u@_vBst@_uAovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB_vBst@ovB";
+    var trip = await Trip.db.insertRow(session, Trip(
       description: 'Trip from $startAddress to $endAddress',
       startAddress: startAddress,
       endAddress: endAddress,
       departureTime: departureTime,
-      polyline: '',
+      polyline: dummyPolyline,
       preferences: preferences,
       totalDurationSeconds: 0,
+      personality: personality,
+    ));
+
+    final apiKey = session.passwords['geminiApiKey'];
+
+    // 2. The Official Schema (This is the most reliable way)
+    final schema = Schema.array(
+      items: Schema.object(
+        properties: {
+          'slotTitle': Schema.string(description: 'Chapter name, e.g., "The Morning Brew"'),
+          'name': Schema.string(description: 'Place name'),
+          'address': Schema.string(),
+          'latitude': Schema.number(),
+          'longitude': Schema.number(),
+          'category': Schema.string(),
+          'butlerNote': Schema.string(description: 'Why the butler picked this based on $personality and the user notes'),
+          'priceLevel': Schema.enumString(
+            description: 'Cost of venue',
+            enumValues: ['low', 'medium', 'high'], // Correct Native Syntax
+          ),
+        },
+        requiredProperties: ['slotTitle', 'name', 'latitude', 'longitude', 'butlerNote', 'priceLevel'],
+      ),
     );
-    trip = await Trip.db.insertRow(session, trip);
 
-   final geminiApiKey = session.passwords['geminiApiKey'];
-  
-  // 1. Initialize Dartantic with Gemini
-  final agent = Agent.forProvider(
-    GoogleProvider(apiKey: geminiApiKey),
-    chatModelName: 'gemini-2.5-flash-lite',
-  );
-
-
-  // 2. Define the exact structure you want
-  // We use a Map representation that matches your 'Stop' model fields
-  final stopSchema = {
-    "slotTitle": "String",
-    "name": "String",
-    "address": "String",
-    "latitude": "double",
-    "longitude": "double",
-    "butlerNote": "String",
-    "category": "String",
-  };
-
-  // 3. Call the structured generation
-  final List<dynamic> rawStops = await agent.generateList(
-    prompt: "Plan a trip for a $personality from $startAddress to $endAddress.",
-    schema: stopSchema,
-    count: 12, // 4 chapters x 3 options
-  );
-
-  // 4. Convert and Save to Database
-  var stops = <Stop>[];
-  for (var i = 0; i < rawStops.length; i++) {
-    final data = rawStops[i];
-    var stop = Stop(
-      stopId: i,
-      tripId: trip.id!,
-      name: data['name'],
-      slotTitle: data['slotTitle'],
-      address: data['address'],
-      latitude: data['latitude'],
-      longitude: data['longitude'],
-      category: data['category'],
-      butlerNote: data['butlerNote'],
-      status: StopStatus.untouched,
-      priceLevel: PriceLevel.medium,
-      estimatedArrivalTime: DateTime.now(), // We can calculate this later
+    final model = GenerativeModel(
+      model: 'gemini-2.5-flash-lite',
+      apiKey: apiKey!,
+      systemInstruction: Content.system(systemInstruction),
+      generationConfig: GenerationConfig(
+        responseMimeType: 'application/json',
+        responseSchema: schema,
+      ),
     );
-    stop = await Stop.db.insertRow(session, stop);
-    stops.add(stop);
+
+    // 3. Generate
+    final response = await model.generateContent([
+      Content.text("Plan a trip from $startAddress to $endAddress for a $personality persona. User notes: $preferences")
+    ]);
+
+    // 4. Parse & Save
+    final List<dynamic> rawStops = jsonDecode(response.text!);
+    
+    // DEBUG PRINT:
+    print("--- GEMINI DEBUG ---");
+    print("Total stops generated: ${rawStops.length}");
+    for (var i = 0; i < rawStops.length; i++) {
+      print("Stop $i: ${rawStops[i]['name']} (Chapter: ${rawStops[i]['slotTitle']})");
+    }
+    print("--------------------");
+
+    for (var data in rawStops) {
+      await Stop.db.insertRow(session, Stop(
+        tripId: trip.id!,
+        name: data['name'],
+        slotTitle: data['slotTitle'],
+        address: data['address'] ?? '',
+        latitude: (data['latitude'] as num).toDouble(),
+        longitude: (data['longitude'] as num).toDouble(),
+        category: data['category'] ?? 'general',
+        butlerNote: data['butlerNote'],
+        status: StopStatus.untouched,
+        priceLevel: PriceLevel.values.byName(data['priceLevel'] ?? 'medium'),
+        estimatedArrivalTime: departureTime, 
+      ));
+    }
+
+    // 5. Final Fetch with Includes
+    final finalTrip = await Trip.db.findById(
+      session,
+      trip.id!,
+      include: Trip.include(stops: Stop.includeList()),
+    );
+
+    return finalTrip!;
   }
-  trip.stops = stops;
-
-  return trip;
-  }
-
-  // Future<> updateStopStatus(Session session, {
-  //   required int stopId,
-  //   required StopStatus status
-  // }) async {
-
-  // }
-
-  // Future<> getTripDetails(Session session, int tripId) async {
-
-  // }
-
-  // Future<> getFinalItinerary(Session session, int tripId) async {
-
-  // }
-
-}
-
-Trip dummyTrip() {
-
-   final trip = Trip(
-      description: 'Mock Trip Description',
-      startAddress: 'Austin, TX',
-      endAddress: 'Dallas, TX',
-      departureTime: DateTime.now(),
-      polyline: 'u|~nDlfr^',
-      preferences: 'None',
-      totalDurationSeconds: 3600,
-      stops: [
-    // CHAPTER 1: The Morning Caffeine Kick
-    Stop(
-      stopId: 1,
-      tripId: 1,
-      name: "Early Bird Coffee",
-      slotTitle: "☕ The Morning Caffeine Kick",
-      address: "123 Java Lane, Austin, TX",
-      latitude: 30.2672,
-      longitude: -97.7431,
-      category: "coffee",
-      butlerNote: "Your Butler noticed this place has a 4.9 rating for their nitro cold brew. Perfect for the first leg!",
-      priceLevel: PriceLevel.low,
-      status: StopStatus.untouched,
-      estimatedArrivalTime: DateTime.now().add(const Duration(hours: 2)),
-    ),
-    Stop(
-      stopId: 2,
-      tripId: 1,
-      name: "Donut Palace",
-      slotTitle: "☕ The Morning Caffeine Kick",
-      address: "456 Sugar Rd, Round Rock, TX",
-      latitude: 30.5083,
-      longitude: -97.6789,
-      category: "pastry",
-      butlerNote: "A quick, high-energy stop right off the exit. The Butler recommends the maple long johns.",
-      priceLevel: PriceLevel.low,
-      status: StopStatus.untouched,
-      estimatedArrivalTime: DateTime.now().add(const Duration(hours: 2, minutes: 15)),
-    ),
-    Stop(
-      stopId: 3,
-      tripId: 1,
-      name: "Whole Foods Market",
-      slotTitle: "☕ The Morning Caffeine Kick",
-      address: "525 N Lamar Blvd, Austin, TX",
-      latitude: 30.2707,
-      longitude: -97.7518,
-      category: "healthy",
-      butlerNote: "The Butler suggests this for a clean start. Great restrooms and a wide variety of juices.",
-      priceLevel: PriceLevel.medium,
-      status: StopStatus.untouched,
-      estimatedArrivalTime: DateTime.now().add(const Duration(hours: 2, minutes: 5)),
-    ),
-
-    // // CHAPTER 2: The Local Legend Lunch
-    Stop(
-      stopId: 4,
-      tripId: 1,
-      name: "Salt Lick BBQ",
-      slotTitle: "🍖 The Local Legend Lunch",
-      address: "18300 FM 1826, Driftwood, TX",
-      latitude: 30.1312,
-      longitude: -98.0135,
-      category: "lunch",
-      butlerNote: "An iconic Texas experience. It's 15 minutes off the main route, but the brisket is worth the detour.",
-      priceLevel: PriceLevel.medium,
-      status: StopStatus.untouched,
-      estimatedArrivalTime: DateTime.now().add(const Duration(hours: 5)),
-    ),
-    Stop(
-      stopId: 5,
-      tripId: 1,
-      name: "Taco Deli",
-      slotTitle: "🍖 The Local Legend Lunch",
-      address: "Various Locations",
-      latitude: 30.26,
-      longitude: -97.74,
-      category: "lunch",
-      butlerNote: "Fast, local, and delicious. Your Butler suggests the 'Spyglass' taco for a true Austin flavor.",
-      priceLevel: PriceLevel.low,
-      status: StopStatus.untouched,
-      estimatedArrivalTime: DateTime.now().add(const Duration(hours: 4, minutes: 45)),
-    ),
-    Stop(
-      stopId: 6,
-      tripId: 1,
-      name: "The Picnic",
-      slotTitle: "🍖 The Local Legend Lunch",
-      address: "1720 Barton Springs Rd",
-      latitude: 30.2635,
-      longitude: -97.7628,
-      category: "food_trucks",
-      butlerNote: "A food truck park! Great if your group can't decide on one thing. Everyone gets what they want.",
-      priceLevel: PriceLevel.medium,
-      status: StopStatus.untouched,
-      estimatedArrivalTime: DateTime.now().add(const Duration(hours: 5, minutes: 10)),
-    ),
-  ],
-    );
-    return trip;
 }
