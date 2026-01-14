@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:road_trip_butler_client/road_trip_butler_client.dart';
 import 'trip_building_screen.dart';
+import 'trip_map_screen.dart';
 import '../main.dart';
 
 
@@ -104,6 +105,7 @@ class _TripFormScreenState extends State<TripFormScreen> {
       // 5. Navigate to the Selection Screen with the REAL data from the server
       Navigator.of(context).push(
         MaterialPageRoute(
+          //builder: (context) => TripMapScreen(trip: completedTrip),
           builder: (context) => TripBuildingScreen(trip: completedTrip),
         ),
       );

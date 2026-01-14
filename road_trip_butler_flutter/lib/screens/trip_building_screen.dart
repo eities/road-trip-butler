@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:road_trip_butler_client/road_trip_butler_client.dart';
 import 'package:collection/collection.dart';
+import 'package:road_trip_butler_flutter/screens/trip_map_screen.dart';
 import '../main.dart';
+import '../utils/map_utils.dart';
 
 class TripBuildingScreen extends StatefulWidget {
   final Trip trip;
@@ -86,7 +88,11 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
 
   Future<void> _onStopSelected(dynamic stop) async {
     setState(() {
-      _selectedStopIds.add(stop.id);
+      if (_selectedStopIds.contains(stop.id)) {
+        _selectedStopIds.remove(stop.id);
+      } else {
+        _selectedStopIds.add(stop.id);
+      }
     });
 
     try {
@@ -116,6 +122,27 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
     }
   }
 
+  Future<void> _exportToGoogleMaps() async {
+    final selectedStops = widget.trip.stops
+            ?.where((stop) => _selectedStopIds.contains(stop.id))
+            .toList() ??
+        [];
+
+    // Only block if no stops AND no start/end addresses (unlikely for a valid trip)
+    if (selectedStops.isEmpty && (widget.trip.startAddress == null || widget.trip.startAddress!.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Nothing to export.")),
+      );
+      return;
+    }
+
+    await MapUtils().exportToGoogleMaps(
+      selectedStops,
+      startAddress: widget.trip.startAddress,
+      endAddress: widget.trip.endAddress,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Group the stops by their slotTitle (e.g., "The Mid-Day Pitstop")
@@ -126,25 +153,33 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
     //final Map<String, List<dynamic>> groupedStops = {}; 
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _exportToGoogleMaps,
+        label: const Text('Export to Maps'),
+        icon: const Icon(Icons.map),
+      ),
       body: CustomScrollView(
         slivers: [
           // 1. SliverAppBar with Google Map
           SliverAppBar(
+            
+          
             expandedHeight: 300.0,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              // background: GoogleMap(
-              //   initialCameraPosition: CameraPosition(
-              //     target: widget.trip.stops?.isNotEmpty == true
-              //         ? LatLng(widget.trip.stops!.first.latitude, widget.trip.stops!.first.longitude)
-              //         : const LatLng(37.7749, -122.4194),
-              //     zoom: 10,
-              //   ),
-              //   //polylines: _polylines,
-              //   //markers: _markers,
-              //   zoomControlsEnabled: false,
-              //   onMapCreated: (controller) => _mapController = controller,
-              // ),
+            background: TripMapScreen(trip: widget.trip)
+            //GoogleMap(
+          //     //   initialCameraPosition: CameraPosition(
+          //     //     target: widget.trip.stops?.isNotEmpty == true
+          //     //         ? LatLng(widget.trip.stops!.first.latitude, widget.trip.stops!.first.longitude)
+          //     //         : const LatLng(37.7749, -122.4194),
+          //     //     zoom: 10,
+          //     //   ),
+          //     //   //polylines: _polylines,
+          //     //   //markers: _markers,
+          //     //   zoomControlsEnabled: false,
+          //     //   onMapCreated: (controller) => _mapController = controller,
+          //     // ),
             ),
           ),
 

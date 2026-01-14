@@ -77,7 +77,7 @@ class TripEndpoint extends Endpoint {
 
     LOGIC RULES:
     - Chapters: Group stops into logical 'Chapters' (e.g., 'The Morning Caffeine Kick', 'The Local Legend Lunch').
-    - Stay between 2 - 4 chapters. Each meal time that the trip will span over will usually need a chapter. Usually 1 to 2 additional stops can occur between meal times.
+    - Stay between 2 - 4 chapters, each chapter about 2 hours further along the route. Each meal time that the trip will span over will usually need a chapter. Usually 1 to 2 additional stops can occur between meal times.
     - Provide 3 distinct options per Chapter so the user has choices. Each option should have the same chapter name which is put in the slotTitle field.
     - Relevance: Only suggest stops that are reasonably near the route between the start and end points.
     - Coordinates: Ensure latitude and longitude are precise for map rendering.
