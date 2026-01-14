@@ -92,7 +92,7 @@ class TripEndpoint extends Endpoint {
     """;
 
     final polyline = await _fetchRoutePolyline(session, startAddress, endAddress);
-    print(polyline);
+    //print(polyline);
     var trip = await Trip.db.insertRow(session, Trip(
       description: 'Trip from $startAddress to $endAddress',
       startAddress: startAddress,
