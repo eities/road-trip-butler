@@ -22,7 +22,10 @@ late String serverUrl;
 String getSmartDefaultHost() {
   if (kIsWeb) return 'localhost';
   // Magic IP for Android Emulator
-  if (Platform.isAndroid) return '10.0.2.2'; 
+  if (Platform.isAndroid) {
+    return 'localhost';
+    //return '10.0.2.2'; 
+  }
   return 'localhost';
 }
 

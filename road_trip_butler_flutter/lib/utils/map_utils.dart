@@ -11,13 +11,21 @@ class MapUtils {
     String destination;
     List<Stop> waypointsList = [];
 
+    String getStopLocation(Stop stop) {
+      if (stop.name.isNotEmpty) {
+        String cleanName = stop.name.replaceAll('|', ' ').replaceAll(',', ' ');
+        return "$cleanName, ${stop.latitude},${stop.longitude}";
+      }
+      return "${stop.latitude},${stop.longitude}";
+    }
+
     // 1. Define Origin
     if (startAddress != null && startAddress.isNotEmpty) {
       origin = startAddress;
       waypointsList = List.from(selectedStops);
     } else {
       // Fallback: Use first stop as origin
-      origin = "${selectedStops.first.latitude},${selectedStops.first.longitude}";
+      origin = getStopLocation(selectedStops.first);
       if (selectedStops.length > 1) waypointsList = selectedStops.sublist(1);
     }
 
@@ -27,7 +35,7 @@ class MapUtils {
     } else if (waypointsList.isNotEmpty) {
       // Fallback: Use last stop/waypoint as destination
       final last = waypointsList.last;
-      destination = "${last.latitude},${last.longitude}";
+      destination = getStopLocation(last);
       waypointsList.removeLast();
     } else {
       destination = origin;
@@ -36,7 +44,7 @@ class MapUtils {
     // 3. Build Waypoints String
     String? waypoints;
     if (waypointsList.isNotEmpty) {
-      waypoints = waypointsList.map((s) => "${s.latitude},${s.longitude}").join('|');
+      waypoints = waypointsList.map((s) => getStopLocation(s)).join('|');
     }
 
     // 4. Build URL with proper encoding

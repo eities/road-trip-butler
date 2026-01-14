@@ -1,6 +1,5 @@
 import 'package:road_trip_butler_server/src/generated/protocol.dart';
 import 'package:serverpod/serverpod.dart';
-import 'package:dartantic_ai/dartantic_ai.dart';
 import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:http/http.dart' as http;
