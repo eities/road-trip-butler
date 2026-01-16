@@ -5,8 +5,9 @@ import 'package:road_trip_butler_client/road_trip_butler_client.dart';
 
 class TripMapScreen extends StatefulWidget {
   final Trip trip;
+  final Set<int> selectedStopIds;
 
-  const TripMapScreen({super.key, required this.trip});
+  const TripMapScreen({super.key, required this.trip, this.selectedStopIds = const {}});
 
   @override
   State<TripMapScreen> createState() => _TripMapScreenState();
@@ -22,6 +23,16 @@ class _TripMapScreenState extends State<TripMapScreen> {
   void initState() {
     super.initState();
     _initMapData();
+  }
+
+  @override
+  void didUpdateWidget(TripMapScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedStopIds != oldWidget.selectedStopIds) {
+      setState(() {
+        _generateMarkers();
+      });
+    }
   }
 
   void _initMapData() {
@@ -42,14 +53,23 @@ class _TripMapScreenState extends State<TripMapScreen> {
     }
 
     // 2. Create Markers
+    _generateMarkers();
+  }
+
+  void _generateMarkers() {
+    _markers.clear();
     if (widget.trip.stops != null) {
       for (var stop in widget.trip.stops!) {
+        final isSelected = widget.selectedStopIds.contains(stop.id);
         _markers.add(
           Marker(
             markerId: MarkerId(stop.id.toString()),
             position: LatLng(stop.latitude, stop.longitude),
             onTap: () => _showStopDetails(stop),
             infoWindow: InfoWindow(title: stop.name), // Fallback
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              isSelected ? BitmapDescriptor.hueGreen : BitmapDescriptor.hueRed,
+            ),
           ),
         );
       }

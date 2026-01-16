@@ -28,7 +28,7 @@ abstract class Stop implements _i1.SerializableModel {
     this.rating,
     required this.priceLevel,
     required this.status,
-    required this.estimatedArrivalTime,
+    this.detourTimeMinutes,
   });
 
   factory Stop({
@@ -44,7 +44,7 @@ abstract class Stop implements _i1.SerializableModel {
     double? rating,
     required _i2.PriceLevel priceLevel,
     required _i3.StopStatus status,
-    required DateTime estimatedArrivalTime,
+    int? detourTimeMinutes,
   }) = _StopImpl;
 
   factory Stop.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -63,9 +63,7 @@ abstract class Stop implements _i1.SerializableModel {
         (jsonSerialization['priceLevel'] as String),
       ),
       status: _i3.StopStatus.fromJson((jsonSerialization['status'] as String)),
-      estimatedArrivalTime: _i1.DateTimeJsonExtension.fromJson(
-        jsonSerialization['estimatedArrivalTime'],
-      ),
+      detourTimeMinutes: jsonSerialization['detourTimeMinutes'] as int?,
     );
   }
 
@@ -96,7 +94,7 @@ abstract class Stop implements _i1.SerializableModel {
 
   _i3.StopStatus status;
 
-  DateTime estimatedArrivalTime;
+  int? detourTimeMinutes;
 
   /// Returns a shallow copy of this [Stop]
   /// with some or all fields replaced by the given arguments.
@@ -114,7 +112,7 @@ abstract class Stop implements _i1.SerializableModel {
     double? rating,
     _i2.PriceLevel? priceLevel,
     _i3.StopStatus? status,
-    DateTime? estimatedArrivalTime,
+    int? detourTimeMinutes,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -132,7 +130,7 @@ abstract class Stop implements _i1.SerializableModel {
       if (rating != null) 'rating': rating,
       'priceLevel': priceLevel.toJson(),
       'status': status.toJson(),
-      'estimatedArrivalTime': estimatedArrivalTime.toJson(),
+      if (detourTimeMinutes != null) 'detourTimeMinutes': detourTimeMinutes,
     };
   }
 
@@ -158,7 +156,7 @@ class _StopImpl extends Stop {
     double? rating,
     required _i2.PriceLevel priceLevel,
     required _i3.StopStatus status,
-    required DateTime estimatedArrivalTime,
+    int? detourTimeMinutes,
   }) : super._(
          id: id,
          tripId: tripId,
@@ -172,7 +170,7 @@ class _StopImpl extends Stop {
          rating: rating,
          priceLevel: priceLevel,
          status: status,
-         estimatedArrivalTime: estimatedArrivalTime,
+         detourTimeMinutes: detourTimeMinutes,
        );
 
   /// Returns a shallow copy of this [Stop]
@@ -192,7 +190,7 @@ class _StopImpl extends Stop {
     Object? rating = _Undefined,
     _i2.PriceLevel? priceLevel,
     _i3.StopStatus? status,
-    DateTime? estimatedArrivalTime,
+    Object? detourTimeMinutes = _Undefined,
   }) {
     return Stop(
       id: id is int? ? id : this.id,
@@ -207,7 +205,9 @@ class _StopImpl extends Stop {
       rating: rating is double? ? rating : this.rating,
       priceLevel: priceLevel ?? this.priceLevel,
       status: status ?? this.status,
-      estimatedArrivalTime: estimatedArrivalTime ?? this.estimatedArrivalTime,
+      detourTimeMinutes: detourTimeMinutes is int?
+          ? detourTimeMinutes
+          : this.detourTimeMinutes,
     );
   }
 }

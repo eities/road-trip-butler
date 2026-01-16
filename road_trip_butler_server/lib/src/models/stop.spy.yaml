@@ -12,4 +12,4 @@ fields:
   rating: double?
   priceLevel: PriceLevel       # cheap, medium, expensive
   status: StopStatus           # untouched, accepted, declined, bookmarked
-  estimatedArrivalTime: DateTime
+  detourTimeMinutes: int?

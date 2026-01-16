@@ -8,5 +8,5 @@ fields:
   personality: String
   polyline: String
   preferences: String?
-  totalDurationSeconds: int?
+  totalDurationMinutes: int?
   stops: List<Stop>?, relation(name=trip_stops)

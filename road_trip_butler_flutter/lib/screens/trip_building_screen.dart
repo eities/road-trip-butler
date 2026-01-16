@@ -167,7 +167,10 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
             expandedHeight: 300.0,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-            background: TripMapScreen(trip: widget.trip)
+            background: TripMapScreen(
+              trip: widget.trip,
+              selectedStopIds: Set.from(_selectedStopIds),
+            )
             //GoogleMap(
           //     //   initialCameraPosition: CameraPosition(
           //     //     target: widget.trip.stops?.isNotEmpty == true

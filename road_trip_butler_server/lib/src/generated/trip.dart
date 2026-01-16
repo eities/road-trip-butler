@@ -25,7 +25,7 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     required this.personality,
     required this.polyline,
     this.preferences,
-    this.totalDurationSeconds,
+    this.totalDurationMinutes,
     this.stops,
   });
 
@@ -38,7 +38,7 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     required String personality,
     required String polyline,
     String? preferences,
-    int? totalDurationSeconds,
+    int? totalDurationMinutes,
     List<_i2.Stop>? stops,
   }) = _TripImpl;
 
@@ -54,7 +54,7 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       personality: jsonSerialization['personality'] as String,
       polyline: jsonSerialization['polyline'] as String,
       preferences: jsonSerialization['preferences'] as String?,
-      totalDurationSeconds: jsonSerialization['totalDurationSeconds'] as int?,
+      totalDurationMinutes: jsonSerialization['totalDurationMinutes'] as int?,
       stops: jsonSerialization['stops'] == null
           ? null
           : _i3.Protocol().deserialize<List<_i2.Stop>>(
@@ -84,7 +84,7 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
 
   String? preferences;
 
-  int? totalDurationSeconds;
+  int? totalDurationMinutes;
 
   List<_i2.Stop>? stops;
 
@@ -103,7 +103,7 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     String? personality,
     String? polyline,
     String? preferences,
-    int? totalDurationSeconds,
+    int? totalDurationMinutes,
     List<_i2.Stop>? stops,
   });
   @override
@@ -118,8 +118,8 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       'personality': personality,
       'polyline': polyline,
       if (preferences != null) 'preferences': preferences,
-      if (totalDurationSeconds != null)
-        'totalDurationSeconds': totalDurationSeconds,
+      if (totalDurationMinutes != null)
+        'totalDurationMinutes': totalDurationMinutes,
       if (stops != null) 'stops': stops?.toJson(valueToJson: (v) => v.toJson()),
     };
   }
@@ -136,8 +136,8 @@ abstract class Trip implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       'personality': personality,
       'polyline': polyline,
       if (preferences != null) 'preferences': preferences,
-      if (totalDurationSeconds != null)
-        'totalDurationSeconds': totalDurationSeconds,
+      if (totalDurationMinutes != null)
+        'totalDurationMinutes': totalDurationMinutes,
       if (stops != null)
         'stops': stops?.toJson(valueToJson: (v) => v.toJsonForProtocol()),
     };
@@ -185,7 +185,7 @@ class _TripImpl extends Trip {
     required String personality,
     required String polyline,
     String? preferences,
-    int? totalDurationSeconds,
+    int? totalDurationMinutes,
     List<_i2.Stop>? stops,
   }) : super._(
          id: id,
@@ -196,7 +196,7 @@ class _TripImpl extends Trip {
          personality: personality,
          polyline: polyline,
          preferences: preferences,
-         totalDurationSeconds: totalDurationSeconds,
+         totalDurationMinutes: totalDurationMinutes,
          stops: stops,
        );
 
@@ -213,7 +213,7 @@ class _TripImpl extends Trip {
     String? personality,
     String? polyline,
     Object? preferences = _Undefined,
-    Object? totalDurationSeconds = _Undefined,
+    Object? totalDurationMinutes = _Undefined,
     Object? stops = _Undefined,
   }) {
     return Trip(
@@ -225,9 +225,9 @@ class _TripImpl extends Trip {
       personality: personality ?? this.personality,
       polyline: polyline ?? this.polyline,
       preferences: preferences is String? ? preferences : this.preferences,
-      totalDurationSeconds: totalDurationSeconds is int?
-          ? totalDurationSeconds
-          : this.totalDurationSeconds,
+      totalDurationMinutes: totalDurationMinutes is int?
+          ? totalDurationMinutes
+          : this.totalDurationMinutes,
       stops: stops is List<_i2.Stop>?
           ? stops
           : this.stops?.map((e0) => e0.copyWith()).toList(),
@@ -274,8 +274,8 @@ class TripUpdateTable extends _i1.UpdateTable<TripTable> {
     value,
   );
 
-  _i1.ColumnValue<int, int> totalDurationSeconds(int? value) => _i1.ColumnValue(
-    table.totalDurationSeconds,
+  _i1.ColumnValue<int, int> totalDurationMinutes(int? value) => _i1.ColumnValue(
+    table.totalDurationMinutes,
     value,
   );
 }
@@ -311,8 +311,8 @@ class TripTable extends _i1.Table<int?> {
       'preferences',
       this,
     );
-    totalDurationSeconds = _i1.ColumnInt(
-      'totalDurationSeconds',
+    totalDurationMinutes = _i1.ColumnInt(
+      'totalDurationMinutes',
       this,
     );
   }
@@ -333,7 +333,7 @@ class TripTable extends _i1.Table<int?> {
 
   late final _i1.ColumnString preferences;
 
-  late final _i1.ColumnInt totalDurationSeconds;
+  late final _i1.ColumnInt totalDurationMinutes;
 
   _i2.StopTable? ___stops;
 
@@ -381,7 +381,7 @@ class TripTable extends _i1.Table<int?> {
     personality,
     polyline,
     preferences,
-    totalDurationSeconds,
+    totalDurationMinutes,
   ];
 
   @override

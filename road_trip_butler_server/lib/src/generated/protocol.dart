@@ -115,10 +115,10 @@ class Protocol extends _i1.SerializationManagerServer {
           dartType: 'protocol:StopStatus',
         ),
         _i2.ColumnDefinition(
-          name: 'estimatedArrivalTime',
-          columnType: _i2.ColumnType.timestampWithoutTimeZone,
-          isNullable: false,
-          dartType: 'DateTime',
+          name: 'detourTimeMinutes',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
         ),
       ],
       foreignKeys: [
@@ -206,7 +206,7 @@ class Protocol extends _i1.SerializationManagerServer {
           dartType: 'String?',
         ),
         _i2.ColumnDefinition(
-          name: 'totalDurationSeconds',
+          name: 'totalDurationMinutes',
           columnType: _i2.ColumnType.bigint,
           isNullable: true,
           dartType: 'int?',
