@@ -158,38 +158,32 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
         label: const Text('Export to Maps'),
         icon: const Icon(Icons.map),
       ),
-      body: CustomScrollView(
-        slivers: [
-          // 1. SliverAppBar with Google Map
-          SliverAppBar(
-            
-          
-            expandedHeight: 300.0,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-            background: TripMapScreen(
-              trip: widget.trip,
-              selectedStopIds: Set.from(_selectedStopIds),
-            )
-            //GoogleMap(
-          //     //   initialCameraPosition: CameraPosition(
-          //     //     target: widget.trip.stops?.isNotEmpty == true
-          //     //         ? LatLng(widget.trip.stops!.first.latitude, widget.trip.stops!.first.longitude)
-          //     //         : const LatLng(37.7749, -122.4194),
-          //     //     zoom: 10,
-          //     //   ),
-          //     //   //polylines: _polylines,
-          //     //   //markers: _markers,
-          //     //   zoomControlsEnabled: false,
-          //     //   onMapCreated: (controller) => _mapController = controller,
-          //     // ),
+      body: Column(
+        children: [
+          SizedBox(
+            height: 300,
+            child: Stack(
+              children: [
+                TripMapScreen(
+                  trip: widget.trip,
+                  selectedStopIds: Set.from(_selectedStopIds),
+                ),
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 10,
+                  left: 10,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.white.withOpacity(0.7),
+                    child: const BackButton(color: Colors.black),
+                  ),
+                ),
+              ],
             ),
           ),
-
-          // 2. SliverList for the Itinerary
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: groupedStops.length,
+              itemBuilder: (context, index) {
                 final slotTitle = groupedStops.keys.elementAt(index);
                 final stopsForSlot = groupedStops[slotTitle]!;
 
@@ -283,7 +277,6 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
                   ],
                 );
               },
-              childCount: groupedStops.length,
             ),
           ),
         ],
