@@ -24,16 +24,12 @@ class AiService {
 TASKS:
 1. Divide the total duration into 2-5 logical 'Time Slices' (e.g., 90-120 mins) based on the user's Persona. You should give the starting and ending time for each time slice.
 2. For each slice, generate a specific 'googleSearchQuery'. 
-3. The query must be descriptive to help the Google Places API find high-quality, niche results (e.g., "independent third-wave coffee shops" instead of just "coffee").
+3. The query should not be overly descriptive and should match the user's preferences.
 
 STRICT QUERY FORMATTING:
 - Do NOT include city names, state names, or "from/to" directions in the searchQuery.
 - The location is already handled by a polyline.
 - The query should only contain the type of place and the atmosphere.
-
-BAD: "Coffee shops between NYC and Philly"
-
-GOOD: "Artisan third-wave coffee shops with outdoor seating"
 
 CONSTRAINTS:
 - Output must be STRICT JSON.
@@ -124,10 +120,11 @@ CONSTRAINTS:
           'butlerNote': Schema.string(description: 'Why the butler picked this based on $personality and the user notes'),
           'priceLevel': Schema.enumString(
             description: 'Cost of venue',
-            enumValues: ['low', 'medium', 'high'],
+            enumValues: ['low', 'medium', 'high']
           ),
+          'detourTimeMinutes': Schema.number(description: "The detour time in minutes"),
         },
-        requiredProperties: ['slotTitle', 'name', 'latitude', 'longitude', 'butlerNote', 'priceLevel'],
+        requiredProperties: ['slotTitle', 'name', 'latitude', 'longitude', 'butlerNote', 'priceLevel', 'detourTimeMinutes'],
       ),
     );
 

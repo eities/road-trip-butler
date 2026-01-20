@@ -7,15 +7,17 @@ class RouteData {
   final String polyline;
   final List<String> anchors;
   final int durationMinutes;
+  final List<Map<String, dynamic>> routePoints;
 
-  RouteData({required this.polyline, required this.anchors, required this.durationMinutes});
+  RouteData({required this.polyline, required this.anchors, required this.durationMinutes, required this.routePoints});
 }
 
 class MapService {
   Future<RouteData> fetchRoutePolyline(
     Session session, 
     String startAddress, 
-    String endAddress
+    String endAddress,
+    DateTime departureTime,
   ) async {
     // 1. Get API Key from Serverpod passwords
     final apiKey = session.passwords['googleMapsApiKey'];
@@ -23,44 +25,97 @@ class MapService {
       throw Exception('Google Maps API key is missing in passwords.yaml');
     }
 
-    // 2. Construct the URL (Uri.https handles encoding spaces/special characters)
-    final url = Uri.https('maps.googleapis.com', '/maps/api/directions/json', {
-      'origin': startAddress,
-      'destination': endAddress,
-      'key': apiKey,
-      'mode': 'driving',
-    });
+    // 2. Construct the URL for Google Routes API
+    final url = Uri.parse('https://routes.googleapis.com/directions/v2:computeRoutes');
 
     try {
-      final response = await http.get(url);
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': 'routes.duration,routes.polyline.encodedPolyline,routes.legs.steps.staticDuration,routes.legs.steps.polyline.encodedPolyline,routes.legs.steps.endLocation',
+        },
+        body: jsonEncode({
+          'origin': {'address': startAddress},
+          'destination': {'address': endAddress},
+          'travelMode': 'DRIVE',
+          'routingPreference': 'TRAFFIC_AWARE',
+          'departureTime': departureTime.toUtc().toIso8601String(),
+        }),
+      );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to connect to Google API: ${response.statusCode}');
+        throw Exception('Failed to connect to Google Routes API: ${response.statusCode} - ${response.body}');
       }
 
       final data = jsonDecode(response.body);
 
-      // 3. Error Handling for Google-specific status codes
-      if (data['status'] == 'ZERO_RESULTS') {
+      if (data['routes'] == null || (data['routes'] as List).isEmpty) {
         throw Exception('No route found between "$startAddress" and "$endAddress".');
-      } else if (data['status'] != 'OK') {
-        throw Exception('Google Directions API error: ${data['status']} - ${data['error_message'] ?? ''}');
       }
+
+      final route = data['routes'][0];
+
+      // 3. Extract polyline
+      final String polyline = route['polyline']['encodedPolyline'];
+
+      // 4. Extract duration (format is "123s")
+      String durationStr = route['duration'] ?? '0s';
+      if (durationStr.endsWith('s')) {
+        durationStr = durationStr.substring(0, durationStr.length - 1);
+      }
+      final int durationMinutes = (int.tryParse(durationStr) ?? 0) ~/ 60;
 
       List<String> routeAnchors = [];
-      var steps = data['routes'][0]['legs'][0]['steps'];
-      int stepsLength = steps.length ~/ 4;
-      for (var i = 0; i < steps.length; i += stepsLength) {
-        routeAnchors.add(steps[i]['end_location'].toString()); 
+      List<Map<String, dynamic>> routePoints = [];
+      int currentElapsedSeconds = 0;
+
+      if (route['legs'] != null) {
+        for (var leg in route['legs']) {
+          if (leg['steps'] != null) {
+            for (var step in leg['steps']) {
+              String stepDurationStr = step['staticDuration'] ?? '0s';
+              if (stepDurationStr.endsWith('s')) {
+                stepDurationStr = stepDurationStr.substring(0, stepDurationStr.length - 1);
+              }
+              int stepSeconds = int.tryParse(stepDurationStr) ?? 0;
+
+              String stepPolyline = step['polyline']?['encodedPolyline'] ?? '';
+              List<Map<String, double>> stepPoints = _decodePolyline(stepPolyline);
+
+              if (stepPoints.isNotEmpty) {
+                for (int i = 0; i < stepPoints.length; i++) {
+                  int pointTime = currentElapsedSeconds + (stepSeconds * (i + 1) / stepPoints.length).round();
+                  routePoints.add({'lat': stepPoints[i]['lat'], 'lng': stepPoints[i]['lng'], 'elapsedSeconds': pointTime});
+                }
+                currentElapsedSeconds += stepSeconds;
+              }
+            }
+          }
+        }
       }
-      
-      // 4. Extract overview_polyline
-      final String polyline = data['routes'][0]['overview_polyline']['points'];
-      
-      final int durationMinutes = data['routes'][0]['legs'][0]['duration']['value'] ~/ 60;
 
+      if (route['legs'] != null && (route['legs'] as List).isNotEmpty) {
+        var steps = route['legs'][0]['steps'] as List;
+        if (steps.isNotEmpty) {
+          int stepsLength = steps.length ~/ 4;
+          if (stepsLength == 0) stepsLength = 1;
 
-      return RouteData(polyline: polyline, anchors: routeAnchors, durationMinutes: durationMinutes);
+          for (var i = 0; i < steps.length; i += stepsLength) {
+            final endLocation = steps[i]['endLocation']['latLng'];
+            if (endLocation != null) {
+              // Convert to legacy format {lat: ..., lng: ...} string representation
+              routeAnchors.add({
+                'lat': endLocation['latitude'],
+                'lng': endLocation['longitude']
+              }.toString());
+            }
+          }
+        }
+      }
+
+      return RouteData(polyline: polyline, anchors: routeAnchors, durationMinutes: durationMinutes, routePoints: routePoints);
     } catch (e) {
       session.log('Error fetching polyline: $e', level: LogLevel.error);
       rethrow;
@@ -69,8 +124,7 @@ class MapService {
 
   Future<List<Map<String, dynamic>>> fetchStopsFromQueries(
     Session session,
-    String polyline,
-    int totalDurationMinutes,
+    List<Map<String, dynamic>> routePoints,
     List<dynamic> timeSlices,
   ) async {
     final apiKey = session.passwords['googleMapsApiKey'];
@@ -78,18 +132,7 @@ class MapService {
       throw Exception('Google Maps API key is missing in passwords.yaml');
     }
 
-    final points = _decodePolyline(polyline);
-    if (points.isEmpty) return [];
-
-    // 1. Calculate total distance and cumulative distances for interpolation
-    double totalDistanceKm = 0;
-    List<double> cumulativeDistances = [0];
-    for (int i = 0; i < points.length - 1; i++) {
-      double dist = _calculateDistance(
-          points[i]['lat']!, points[i]['lng']!, points[i + 1]['lat']!, points[i + 1]['lng']!);
-      totalDistanceKm += dist;
-      cumulativeDistances.add(totalDistanceKm);
-    }
+    if (routePoints.isEmpty) return [];
 
     List<Map<String, dynamic>> allStops = [];
 
@@ -98,23 +141,26 @@ class MapService {
       int endMins = slice['timeSliceEndMinutes'];
       String query = slice['googleSearchQuery'];
 
-      // 2. Calculate segment based on time ratio
-      double startRatio = totalDurationMinutes > 0 ? startMins / totalDurationMinutes : 0.0;
-      double endRatio = totalDurationMinutes > 0 ? endMins / totalDurationMinutes : 1.0;
-      
-      startRatio = startRatio.clamp(0.0, 1.0);
-      endRatio = endRatio.clamp(0.0, 1.0);
-      if (startRatio > endRatio) {
-         double temp = startRatio; startRatio = endRatio; endRatio = temp;
-      }
+      int startSeconds = startMins * 60;
+      int endSeconds = endMins * 60;
 
-      // Extract points for this segment
-      List<Map<String, double>> segmentPoints = _getPolylineSegment(
-        points, cumulativeDistances, totalDistanceKm, startRatio, endRatio
-      );
+      int actualStartSeconds = -1;
+      int actualEndSeconds = 0;
+      List<Map<String, double>> segmentPoints = [];
+      for (var p in routePoints) {
+        int t = p['elapsedSeconds'];
+        if (t >= startSeconds && t <= endSeconds) {
+          segmentPoints.add({'lat': p['lat'], 'lng': p['lng']});
+          if (actualStartSeconds == -1) actualStartSeconds = t;
+          actualEndSeconds = t;
+        }
+      }
+      print(actualStartSeconds / 60);
+      print(actualEndSeconds / 60);
 
       if (segmentPoints.isEmpty) continue;
 
+      int baselineDurationSeconds = max(0, actualEndSeconds - actualStartSeconds);
       String encodedSegment = _encodePolyline(segmentPoints);
 
       // 3. Call Places API (New)
@@ -126,24 +172,46 @@ class MapService {
           headers: {
             'Content-Type': 'application/json',
             'X-Goog-Api-Key': apiKey,
-            'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.priceLevel',
+            'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.priceLevel,routingSummaries',
           },
           body: jsonEncode({
             "textQuery": query,
             "searchAlongRouteParameters": {
               "polyline": {
                 "encodedPolyline": encodedSegment
-              }
+              },
+              
             },
+            // "routingParameters": {
+            //   "origin": {
+            //     "latitude": segmentPoints.first['lat'],
+            //     "longitude": segmentPoints.first['lng']
+            //   }
+            // },
           }),
         );
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           final places = data['places'] as List?;
-          
+          final routingSummaries = data['routingSummaries'] as List?;
+          //print(routingSummaries);
           if (places != null) {
-             for (var place in places) {
+             for (int i = 0; i < places.length; i++) {
+                final place = places[i];
+                int detourMinutes = 0;
+
+                if (routingSummaries != null && i < routingSummaries.length) {
+                  final legs = routingSummaries[i]['legs'] as List?;
+                  if (legs != null && legs.length == 2) {
+                    final durationToPlace = _parseDurationSeconds(legs[0]['duration']);
+                    final durationFromPlace = _parseDurationSeconds(legs[1]['duration']);
+                    final detourSeconds = (durationToPlace + durationFromPlace) - baselineDurationSeconds;
+                    detourMinutes = max(0, (detourSeconds / 60).round());
+                    //print(detourMinutes);
+                  }
+                }
+
                 allStops.add({
                   'slotTitle': query,
                   'name': place['displayName']?['text'] ?? 'Unknown',
@@ -153,6 +221,7 @@ class MapService {
                   'category': (place['types'] as List?)?.isNotEmpty == true ? place['types'][0] : 'general',
                   'butlerNote': 'Rated ${place['rating'] ?? 'N/A'} stars. Matched "$query".',
                   'priceLevel': _mapPriceLevel(place['priceLevel']),
+                  'detourTimeMinutes': detourMinutes,
                 });
              }
           }
@@ -165,38 +234,6 @@ class MapService {
     }
 
     return allStops;
-  }
-
-  List<Map<String, double>> _getPolylineSegment(
-      List<Map<String, double>> points, 
-      List<double> cumulativeDistances, 
-      double totalDistance, 
-      double startRatio, 
-      double endRatio) {
-    
-    double startDist = totalDistance * startRatio;
-    double endDist = totalDistance * endRatio;
-
-    int startIndex = 0;
-    int endIndex = points.length - 1;
-
-    for (int i = 0; i < cumulativeDistances.length; i++) {
-      if (cumulativeDistances[i] >= startDist) {
-        startIndex = max(0, i - 1); 
-        break;
-      }
-    }
-
-    for (int i = startIndex; i < cumulativeDistances.length; i++) {
-      if (cumulativeDistances[i] >= endDist) {
-        endIndex = i;
-        break;
-      }
-    }
-    
-    if (startIndex > endIndex) return [points[startIndex]];
-
-    return points.sublist(startIndex, endIndex + 1);
   }
 
   String _encodePolyline(List<Map<String, double>> points) {
@@ -215,6 +252,14 @@ class MapService {
       lastLng = lng;
     }
     return result.toString();
+  }
+
+  int _parseDurationSeconds(String? duration) {
+    if (duration == null) return 0;
+    if (duration.endsWith('s')) {
+      return int.tryParse(duration.substring(0, duration.length - 1)) ?? 0;
+    }
+    return int.tryParse(duration) ?? 0;
   }
 
   void _encodeValue(StringBuffer result, int value) {
@@ -269,12 +314,5 @@ class MapService {
       poly.add({'lat': (lat / 1E5).toDouble(), 'lng': (lng / 1E5).toDouble()});
     }
     return poly;
-  }
-
-  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const p = 0.017453292519943295; // Math.PI / 180
-    var c = cos;
-    var a = 0.5 - c((lat2 - lat1) * p) / 2 + c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
-    return 12742 * asin(sqrt(a)); // 2 * R; R = 6371 km
   }
 }

@@ -241,6 +241,13 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
                                       ),
                                       const SizedBox(width: 12),
                                       Text(_getPriceDisplay(stop.priceLevel), style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                                      const SizedBox(width: 12),
+                                      const Icon(Icons.timer, size: 16, color: Colors.blueGrey),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '+${stop.detourTimeMinutes ?? 0} min',
+                                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: 4),

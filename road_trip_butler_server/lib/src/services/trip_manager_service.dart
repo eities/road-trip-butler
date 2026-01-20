@@ -15,7 +15,7 @@ class TripManagerService {
     required String preferences,
   }) async {
     // 1. Fetch Route
-    final routeData = await _mapService.fetchRoutePolyline(session, startAddress, endAddress);
+    final routeData = await _mapService.fetchRoutePolyline(session, startAddress, endAddress, departureTime);
     
     // 2. Create Trip Entry
     var trip = await Trip.db.insertRow(session, Trip(
@@ -42,12 +42,13 @@ class TripManagerService {
     );
 
     // 4. Query Google maps along route for stops
-    final candidateStops = await _mapService.fetchStopsFromQueries(
+    final candidateStopsUnfiltered = await _mapService.fetchStopsFromQueries(
       session,
-      routeData.polyline,
-      routeData.durationMinutes,
+      routeData.routePoints,
       rawTimeSlices,
     );
+
+    final candidateStops = candidateStopsUnfiltered.where((stop) => stop['detourTimeMinutes']! < 30 ).toList();
 
     // 5. Curate Stops via AI
     final curatedStops = await _aiService.generateStops(
@@ -70,6 +71,7 @@ class TripManagerService {
         butlerNote: data['butlerNote'],
         status: StopStatus.untouched,
         priceLevel: PriceLevel.values.byName(data['priceLevel'] ?? 'medium'),
+        detourTimeMinutes: data['detourTimeMinutes'],
         //estimatedArrivalTime: departureTime, 
       ));
     }
