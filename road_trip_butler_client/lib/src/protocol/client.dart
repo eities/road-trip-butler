@@ -248,6 +248,7 @@ class EndpointTrip extends _i2.EndpointRef {
     required DateTime departureTime,
     required String personality,
     required String preferences,
+    required String personalityDescription,
   }) => caller.callServerEndpoint<_i5.Trip>(
     'trip',
     'createTrip',
@@ -257,6 +258,7 @@ class EndpointTrip extends _i2.EndpointRef {
       'departureTime': departureTime,
       'personality': personality,
       'preferences': preferences,
+      'personalityDescription': personalityDescription,
     },
   );
 }

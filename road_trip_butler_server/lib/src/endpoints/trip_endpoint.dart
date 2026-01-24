@@ -9,6 +9,7 @@ class TripEndpoint extends Endpoint {
     required DateTime departureTime,
     required String personality,
     required String preferences,
+    required String personalityDescription,
   }) async {
     return await TripManagerService().createTrip(
       session,
@@ -16,6 +17,7 @@ class TripEndpoint extends Endpoint {
       endAddress: endAddress,
       departureTime: departureTime,
       personality: personality,
+      personalityDescription: personalityDescription,
       preferences: preferences,
     );
   }

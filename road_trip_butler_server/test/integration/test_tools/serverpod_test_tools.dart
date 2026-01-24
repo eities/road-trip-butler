@@ -468,6 +468,7 @@ class _TripEndpoint {
     required DateTime departureTime,
     required String personality,
     required String preferences,
+    required String personalityDescription,
   }) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
       var _localUniqueSession =
@@ -486,6 +487,7 @@ class _TripEndpoint {
             'departureTime': departureTime,
             'personality': personality,
             'preferences': preferences,
+            'personalityDescription': personalityDescription,
           }),
           serializationManager: _serializationManager,
         );

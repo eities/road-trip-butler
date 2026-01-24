@@ -47,7 +47,9 @@ void main() async {
     serverUrl = serverUrl.replaceAll('localhost', getSmartDefaultHost());
   }
 
-  client = Client(serverUrl)
+  client = Client(
+    serverUrl,
+    connectionTimeout: const Duration(seconds:30))
     ..connectivityMonitor = FlutterConnectivityMonitor()
     ..authSessionManager = FlutterAuthSessionManager();
 

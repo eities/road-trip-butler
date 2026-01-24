@@ -12,6 +12,7 @@ class TripManagerService {
     required String endAddress,
     required DateTime departureTime,
     required String personality,
+    required String personalityDescription,
     required String preferences,
   }) async {
     // 1. Fetch Route
@@ -36,6 +37,7 @@ class TripManagerService {
       startAddress: startAddress,
       endAddress: endAddress,
       personality: personality,
+      personalityDescription: personalityDescription,
       preferences: preferences,
       totalDurationMinutes: 0,
       routeAnchors: routeData.anchors,

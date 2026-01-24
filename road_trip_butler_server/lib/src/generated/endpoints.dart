@@ -275,6 +275,11 @@ class Endpoints extends _i1.EndpointDispatch {
               type: _i1.getType<String>(),
               nullable: false,
             ),
+            'personalityDescription': _i1.ParameterDescription(
+              name: 'personalityDescription',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
           },
           call:
               (
@@ -287,6 +292,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 departureTime: params['departureTime'],
                 personality: params['personality'],
                 preferences: params['preferences'],
+                personalityDescription: params['personalityDescription'],
               ),
         ),
       },
