@@ -5,9 +5,8 @@ import 'package:road_trip_butler_client/road_trip_butler_client.dart';
 
 class TripMapScreen extends StatefulWidget {
   final Trip trip;
-  final Set<int> selectedStopIds;
 
-  const TripMapScreen({super.key, required this.trip, this.selectedStopIds = const {}});
+  const TripMapScreen({super.key, required this.trip});
 
   @override
   State<TripMapScreen> createState() => _TripMapScreenState();
@@ -28,11 +27,10 @@ class _TripMapScreenState extends State<TripMapScreen> {
   @override
   void didUpdateWidget(TripMapScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.selectedStopIds != oldWidget.selectedStopIds) {
-      setState(() {
-        _generateMarkers();
-      });
-    }
+    // Always regenerate markers when the widget updates (e.g. parent setState called)
+    setState(() {
+      _generateMarkers();
+    });
   }
 
   void _initMapData() {
@@ -60,7 +58,7 @@ class _TripMapScreenState extends State<TripMapScreen> {
     _markers.clear();
     if (widget.trip.stops != null) {
       for (var stop in widget.trip.stops!) {
-        final isSelected = widget.selectedStopIds.contains(stop.id);
+        final isSelected = stop.status == StopStatus.selected;
         _markers.add(
           Marker(
             markerId: MarkerId(stop.id.toString()),

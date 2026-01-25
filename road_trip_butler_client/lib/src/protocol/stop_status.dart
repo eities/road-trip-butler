@@ -14,7 +14,7 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 enum StopStatus implements _i1.SerializableModel {
   untouched,
-  accepted,
+  selected,
   declined,
   bookmarked;
 
@@ -22,8 +22,8 @@ enum StopStatus implements _i1.SerializableModel {
     switch (name) {
       case 'untouched':
         return StopStatus.untouched;
-      case 'accepted':
-        return StopStatus.accepted;
+      case 'selected':
+        return StopStatus.selected;
       case 'declined':
         return StopStatus.declined;
       case 'bookmarked':

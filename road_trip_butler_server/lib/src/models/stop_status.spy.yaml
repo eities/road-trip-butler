@@ -2,6 +2,6 @@
 enum: StopStatus
 values:
   - untouched # Initial state
-  - accepted  # User swiped right
+  - selected  # User swiped right
   - declined  # User swiped left
   - bookmarked # User "starred" it or clicked "maybe"

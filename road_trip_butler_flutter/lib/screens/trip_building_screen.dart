@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:road_trip_butler_flutter/screens/trip_map_screen.dart';
 import '../main.dart';
 import '../utils/map_utils.dart';
+import '../utils/local_storage_utils.dart';
 
 class TripBuildingScreen extends StatefulWidget {
   final Trip trip;
@@ -20,13 +21,11 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
   final Set<Polyline> _polylines = {};
   final Set<Marker> _markers = {};
 
-  // Track selected stop IDs to visually indicate choice
-  final Set<int> _selectedStopIds = {};
+  final LocalStorageService _localStorage = LocalStorageService();
 
   @override
   void initState() {
     super.initState();
-    //_initializeMapData();
   }
 
   void _initializeMapData() {
@@ -86,27 +85,15 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
     return poly;
   }
 
-  Future<void> _onStopSelected(dynamic stop) async {
+  Future<void> _onStopSelected(Stop stop) async {
+    final isSelected = stop.status == StopStatus.selected;
     setState(() {
-      if (_selectedStopIds.contains(stop.id)) {
-        _selectedStopIds.remove(stop.id);
-      } else {
-        _selectedStopIds.add(stop.id);
-      }
+      // Toggle status
+      stop.status = isSelected ? StopStatus.untouched : StopStatus.selected;
     });
 
-    try {
-      // Call the Serverpod endpoint
-      // Note: Ensure updateStopStatus is implemented in your Client/Endpoint
-      // await client.trip.updateStopStatus(stopId: stop.id, status: 'selected');
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to update stop: $e")),
-      );
-      setState(() {
-        _selectedStopIds.remove(stop.id);
-      });
-    }
+    // Persist changes
+    await _localStorage.saveTrip(widget.trip);
   }
 
   String _getPriceDisplay(PriceLevel price) {
@@ -124,7 +111,7 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
 
   Future<void> _exportToGoogleMaps() async {
     final selectedStops = widget.trip.stops
-            ?.where((stop) => _selectedStopIds.contains(stop.id))
+            ?.where((stop) => stop.status == StopStatus.selected)
             .toList() ??
         [];
 
@@ -166,7 +153,6 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
               children: [
                 TripMapScreen(
                   trip: widget.trip,
-                  selectedStopIds: Set.from(_selectedStopIds),
                 ),
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 10,
@@ -202,7 +188,7 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
                         itemCount: stopsForSlot.length,
                         itemBuilder: (context, pageIndex) {
                           final stop = stopsForSlot[pageIndex];
-                          final isSelected = _selectedStopIds.contains(stop.id);
+                          final isSelected = stop.status == StopStatus.selected;
 
                           return Card(
                             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),

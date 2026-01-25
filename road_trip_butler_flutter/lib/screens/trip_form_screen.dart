@@ -5,6 +5,7 @@ import 'package:road_trip_butler_client/road_trip_butler_client.dart';
 import 'trip_building_screen.dart';
 import 'trip_map_screen.dart';
 import '../main.dart';
+import '../utils/local_storage_utils.dart';
 
 
 class TripFormScreen extends StatefulWidget {
@@ -18,6 +19,13 @@ class _TripFormScreenState extends State<TripFormScreen> {
   final _notesController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   String _selectedPersona = 'The Explorer'; // Default
+  final LocalStorageService _localStorage = LocalStorageService();
+
+  @override
+  void initState() {
+    super.initState();
+    _localStorage.init();
+  }
 
   static const List<Map<String, String>> _personas = [
   {'name': 'The Explorer', 'icon': '🧭', 'desc': 'Scenic & unique', 'detailed_description': 'scenic and unique, quirky attractions, slightly longer detours allowed if the stop is epic, prioritize making the driving stops memorable'},
@@ -104,17 +112,23 @@ class _TripFormScreenState extends State<TripFormScreen> {
         preferences: _notesController.text,
       );
 
+      // Save to local storage
+      await _localStorage.saveTrip(completedTrip);
+
       // 4. Close the loading dialog
       if (!mounted) return;
       Navigator.of(context).pop();
 
       // 5. Navigate to the Selection Screen with the REAL data from the server
-      Navigator.of(context).push(
+      await Navigator.of(context).push(
         MaterialPageRoute(
           //builder: (context) => TripMapScreen(trip: completedTrip),
           builder: (context) => TripBuildingScreen(trip: completedTrip),
         ),
       );
+
+      // Save again upon return to capture any changes made to stops (selection status)
+      await _localStorage.saveTrip(completedTrip);
     } catch (e) {
       Navigator.of(context).pop(); // Close dialog on error
       ScaffoldMessenger.of(context).showSnackBar(
@@ -123,15 +137,60 @@ class _TripFormScreenState extends State<TripFormScreen> {
     }
   }
 
+  void _showSavedTrips() async {
+    final trips = await _localStorage.getSavedTrips();
+    
+    if (!mounted) return;
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => ListView.builder(
+        itemCount: trips.length,
+        itemBuilder: (context, index) {
+          final trip = trips[index];
+          return ListTile(
+            leading: const Icon(Icons.map),
+            title: Text(trip.description),
+            subtitle: Text(DateFormat('MMM d, h:mm a').format(trip.departureTime)),
+            onTap: () {
+              Navigator.pop(context); // Close sheet
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TripBuildingScreen(trip: trip),
+                ),
+              );
+            },
+            trailing: IconButton(
+              icon: const Icon(Icons.delete, color: Colors.redAccent),
+              onPressed: () async {
+                if (trip.id != null) {
+                  await _localStorage.deleteTrip(trip.id.toString());
+                  Navigator.pop(context);
+                  _showSavedTrips(); // Refresh
+                }
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          const SliverAppBar(
+          SliverAppBar(
             expandedHeight: 200,
-            flexibleSpace: FlexibleSpaceBar(
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.history),
+                onPressed: _showSavedTrips,
+                tooltip: 'Saved Trips',
+              ),
+            ],
+            flexibleSpace: const FlexibleSpaceBar(
               title: Text("Road Trip Butler"),
               centerTitle: true,
               background: Icon(Icons.directions_car, size: 80, color: Colors.blueGrey),

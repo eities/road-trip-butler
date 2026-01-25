@@ -27,6 +27,7 @@ dependencies:
   cupertino_icons: ^1.0.5
   flutter:
     sdk: flutter
+  hive_flutter: ^1.1.0
   collection: ^1.18.0
   road_trip_butler_client:
     path: ../road_trip_butler_client
