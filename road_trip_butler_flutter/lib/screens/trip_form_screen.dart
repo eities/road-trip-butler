@@ -20,9 +20,9 @@ class _TripFormScreenState extends State<TripFormScreen> {
   String _selectedPersona = 'The Explorer'; // Default
 
   static const List<Map<String, String>> _personas = [
-  {'name': 'The Explorer', 'icon': '🧭', 'desc': 'Scenic & unique', 'detailed_description': 'scenic and unique'},
-  {'name': 'The Efficient', 'icon': '⚡', 'desc': 'Fast & direct', 'detailed_description': 'fast and direct'},
-  {'name': 'The Family Aide', 'icon': '🧸', 'desc': 'Kid-friendly stops', 'detailed_description': 'kid-friendly stops'},
+  {'name': 'The Explorer', 'icon': '🧭', 'desc': 'Scenic & unique', 'detailed_description': 'scenic and unique, quirky attractions, slightly longer detours allowed if the stop is epic, prioritize making the driving stops memorable'},
+  {'name': 'The Efficient', 'icon': '⚡', 'desc': 'Fast & direct', 'detailed_description': 'fast and direct, rest stops, quick stops, quick restaurants, fast food, or fast casual dining'},
+  {'name': 'The Family Aide', 'icon': '🧸', 'desc': 'Kid-friendly stops', 'detailed_description': 'kid-friendly stops, playgrounds, more frequent quick stops'},
 ];
 
   Future<void> _pickDateTime() async {
@@ -89,13 +89,16 @@ class _TripFormScreenState extends State<TripFormScreen> {
       //   personality: _selectedPersona,
       // );
 
-      // Increase timeout to allow for longer AI processing times
+
+      final startDateTime = DateTime.parse(_selectedDate.toString()).toLocal();
+      final localDepartureTime = DateFormat('h:mm a').format(startDateTime);
   
       // 3. Call Serverpod (Wait for Gemini and Google Maps to respond)
       final completedTrip = await client.trip.createTrip(
         startAddress: _startController.text,
         endAddress: _endController.text,
         departureTime: _selectedDate,
+        localDepartureTime: localDepartureTime,
         personality: _selectedPersona,
         personalityDescription: _personas.firstWhere((p) => p['name'] == _selectedPersona)['detailed_description']!,
         preferences: _notesController.text,

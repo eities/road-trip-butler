@@ -211,7 +211,8 @@ class MapService {
                     //print(detourMinutes);
                   }
                 }
-
+                // print(place['priceLevel']);
+                // print(place['rating'])
                 allStops.add({
                   'slotTitle': query,
                   'name': place['displayName']?['text'] ?? 'Unknown',
@@ -221,6 +222,7 @@ class MapService {
                   'category': (place['types'] as List?)?.isNotEmpty == true ? place['types'][0] : 'general',
                   'butlerNote': 'Rated ${place['rating'] ?? 'N/A'} stars. Matched "$query".',
                   'priceLevel': _mapPriceLevel(place['priceLevel']),
+                  'rating': place['rating'],
                   'detourTimeMinutes': detourMinutes,
                 });
              }
@@ -272,7 +274,7 @@ class MapService {
   }
 
   String _mapPriceLevel(dynamic level) {
-    if (level == null) return 'medium';
+    if (level == null) return 'low';
     if (level is String) {
       if (level.contains('FREE') || level.contains('INEXPENSIVE')) return 'low';
       if (level.contains('MODERATE')) return 'medium';
@@ -283,7 +285,7 @@ class MapService {
       if (level == 2) return 'medium';
       return 'high';
     }
-    return 'medium';
+    return 'low';
   }
 
   List<Map<String, double>> _decodePolyline(String encoded) {

@@ -11,6 +11,7 @@ class TripManagerService {
     required String startAddress,
     required String endAddress,
     required DateTime departureTime,
+    required String localDepartureTime,
     required String personality,
     required String personalityDescription,
     required String preferences,
@@ -39,7 +40,8 @@ class TripManagerService {
       personality: personality,
       personalityDescription: personalityDescription,
       preferences: preferences,
-      totalDurationMinutes: 0,
+      totalDurationMinutes: routeData.durationMinutes,
+      departureTime: localDepartureTime,
       routeAnchors: routeData.anchors,
     );
 
@@ -58,7 +60,10 @@ class TripManagerService {
       personality: personality,
       preferences: preferences,
       candidateStops: candidateStops,
+      departureTime: localDepartureTime,
     );
+
+    print(curatedStops);
 
     // 6. Save Stops
     for (var data in curatedStops) {
@@ -72,8 +77,9 @@ class TripManagerService {
         category: data['category'] ?? 'general',
         butlerNote: data['butlerNote'],
         status: StopStatus.untouched,
-        priceLevel: PriceLevel.values.byName(data['priceLevel'] ?? 'medium'),
+        priceLevel: PriceLevel.values.byName(data['priceLevel'] ?? 'low'),
         detourTimeMinutes: data['detourTimeMinutes'],
+        rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
         //estimatedArrivalTime: departureTime, 
       ));
     }

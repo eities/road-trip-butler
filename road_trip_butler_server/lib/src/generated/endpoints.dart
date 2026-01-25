@@ -265,6 +265,11 @@ class Endpoints extends _i1.EndpointDispatch {
               type: _i1.getType<DateTime>(),
               nullable: false,
             ),
+            'localDepartureTime': _i1.ParameterDescription(
+              name: 'localDepartureTime',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
             'personality': _i1.ParameterDescription(
               name: 'personality',
               type: _i1.getType<String>(),
@@ -290,6 +295,7 @@ class Endpoints extends _i1.EndpointDispatch {
                 startAddress: params['startAddress'],
                 endAddress: params['endAddress'],
                 departureTime: params['departureTime'],
+                localDepartureTime: params['localDepartureTime'],
                 personality: params['personality'],
                 preferences: params['preferences'],
                 personalityDescription: params['personalityDescription'],
