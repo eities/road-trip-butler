@@ -3,7 +3,8 @@ import 'package:serverpod/serverpod.dart';
 import 'package:http/http.dart' as http;
 
 class AiService {
-  static const _baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  static const _baseUrl =
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
   Future<List<dynamic>> generatePrompts({
     required Session session,
@@ -21,7 +22,8 @@ class AiService {
       throw Exception('Gemini API key is missing in passwords.yaml');
     }
 
-    final systemInstruction = """
+    final systemInstruction =
+        """
     You are the 'Road Trip Architect'. Your role is to analyze a driving route and user preferences to define optimal "Search Windows." 
 
 You are acting as $personality . Description: $personalityDescription
@@ -56,7 +58,7 @@ Every object in the array must follow this structure to ensure mathematical accu
       'responseMimeType': 'application/json',
       'thinkingConfig': {
         'includeThoughts': false, // Recommended so you can debug the math
-        'thinkingBudget': 1024,   // Range: 512 to 24,576
+        'thinkingBudget': 1024, // Range: 512 to 24,576
       },
       'responseSchema': {
         'type': 'ARRAY',
@@ -66,9 +68,16 @@ Every object in the array must follow this structure to ensure mathematical accu
             'calculationLogic': {'type': 'STRING'},
             'timeSliceStartMinutes': {'type': 'NUMBER'},
             'timeSliceEndMinutes': {'type': 'NUMBER'},
-            'googleSearchQuery': {'type': 'STRING', 'description': 'Chapter name, e.g., "The Morning Brew"'},
+            'googleSearchQuery': {
+              'type': 'STRING',
+              'description': 'Chapter name, e.g., "The Morning Brew"',
+            },
           },
-          'required': ['timeSliceStartMinutes', 'timeSliceEndMinutes', 'googleSearchQuery'],
+          'required': [
+            'timeSliceStartMinutes',
+            'timeSliceEndMinutes',
+            'googleSearchQuery',
+          ],
         },
       },
       // Example: Add your missing parameter here
@@ -82,32 +91,44 @@ Every object in the array must follow this structure to ensure mathematical accu
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'systemInstruction': {
-          'parts': [{'text': systemInstruction}]
+          'parts': [
+            {'text': systemInstruction},
+          ],
         },
         'generationConfig': generationConfig,
-        'contents': [{
-          'parts': [{'text': """
+        'contents': [
+          {
+            'parts': [
+              {
+                'text':
+                    """
       Trip duration: $totalDurationMinutes
       Start: $startAddress
       End: $endAddress
       Departure Time: $departureTime
       User notes: $preferences
       Plan the search windows.
-      """}]
-        }]
+      """,
+              },
+            ],
+          },
+        ],
       }),
     );
 
-  //   // DEBUG LOG: What did we get back?
-  // print("----------- RESPONSE STATUS: ${response.statusCode} -----------");
-  // print("BODY: ${response.body}");
+    //   // DEBUG LOG: What did we get back?
+    // print("----------- RESPONSE STATUS: ${response.statusCode} -----------");
+    // print("BODY: ${response.body}");
 
     if (response.statusCode != 200) {
-      throw Exception('Gemini API Error: ${response.statusCode} ${response.body}');
+      throw Exception(
+        'Gemini API Error: ${response.statusCode} ${response.body}',
+      );
     }
 
     final jsonResponse = jsonDecode(response.body);
-    final text = jsonResponse['candidates']?[0]?['content']?['parts']?[0]?['text'];
+    final text =
+        jsonResponse['candidates']?[0]?['content']?['parts']?[0]?['text'];
 
     if (text == null) {
       throw Exception('Gemini returned empty response');
@@ -115,7 +136,6 @@ Every object in the array must follow this structure to ensure mathematical accu
 
     return jsonDecode(text);
   }
-
 
   Future<List<dynamic>> generateStops({
     required Session session,
@@ -131,7 +151,8 @@ Every object in the array must follow this structure to ensure mathematical accu
 
     if (candidateStops.isEmpty) return [];
 
-    final systemInstruction = """
+    final systemInstruction =
+        """
     You are the 'Road Trip Butler', a world-class travel concierge. 
     
     INPUT DATA:
@@ -154,25 +175,48 @@ Every object in the array must follow this structure to ensure mathematical accu
       'responseMimeType': 'application/json',
       'thinkingConfig': {
         'includeThoughts': false, // Recommended so you can debug the math
-        'thinkingBudget': 0,   // Range: 512 to 24,576
+        'thinkingBudget': 0, // Range: 512 to 24,576
       },
       'responseSchema': {
         'type': 'ARRAY',
         'items': {
           'type': 'OBJECT',
           'properties': {
-            'slotTitle': {'type': 'STRING', 'description': 'Chapter name, e.g., "The Morning Brew"'},
+            'slotTitle': {
+              'type': 'STRING',
+              'description': 'Chapter name, e.g., "The Morning Brew"',
+            },
             'name': {'type': 'STRING', 'description': 'Place name'},
             'address': {'type': 'STRING'},
             'latitude': {'type': 'NUMBER'},
             'longitude': {'type': 'NUMBER'},
             'category': {'type': 'STRING'},
-            'butlerNote': {'type': 'STRING', 'description': 'Why the butler picked this based on $personality and the user notes'},
-            'priceLevel': {'type': 'STRING', 'enum': ['low', 'medium', 'high'], 'description': 'Cost of venue'},
-            'rating': {'type': 'NUMBER' },
-            'detourTimeMinutes': {'type': 'NUMBER', 'description': "The detour time in minutes"},
+            'butlerNote': {
+              'type': 'STRING',
+              'description':
+                  'Why the butler picked this based on $personality and the user notes',
+            },
+            'priceLevel': {
+              'type': 'STRING',
+              'enum': ['low', 'medium', 'high'],
+              'description': 'Cost of venue',
+            },
+            'rating': {'type': 'NUMBER'},
+            'detourTimeMinutes': {
+              'type': 'NUMBER',
+              'description': "The detour time in minutes",
+            },
           },
-          'required': ['slotTitle', 'name', 'latitude', 'longitude', 'butlerNote', 'priceLevel', 'detourTimeMinutes', 'rating'],
+          'required': [
+            'slotTitle',
+            'name',
+            'latitude',
+            'longitude',
+            'butlerNote',
+            'priceLevel',
+            'detourTimeMinutes',
+            'rating',
+          ],
         },
       },
       // Add your custom parameters here
@@ -185,21 +229,30 @@ Every object in the array must follow this structure to ensure mathematical accu
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'systemInstruction': {
-          'parts': [{'text': systemInstruction}]
+          'parts': [
+            {'text': systemInstruction},
+          ],
         },
         'generationConfig': generationConfig,
-        'contents': [{
-          'parts': [{'text': jsonEncode(candidateStops)}]
-        }]
+        'contents': [
+          {
+            'parts': [
+              {'text': jsonEncode(candidateStops)},
+            ],
+          },
+        ],
       }),
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Gemini API Error: ${response.statusCode} ${response.body}');
+      throw Exception(
+        'Gemini API Error: ${response.statusCode} ${response.body}',
+      );
     }
 
     final jsonResponse = jsonDecode(response.body);
-    final text = jsonResponse['candidates']?[0]?['content']?['parts']?[0]?['text'];
+    final text =
+        jsonResponse['candidates']?[0]?['content']?['parts']?[0]?['text'];
 
     if (text == null) {
       throw Exception('Gemini returned empty response');

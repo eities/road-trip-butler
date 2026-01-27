@@ -7,7 +7,8 @@ class TripManagerService {
   final MapService _mapService = MapService();
   final AiService _aiService = AiService();
 
-  Future<Trip> createTrip(Session session, {
+  Future<Trip> createTrip(
+    Session session, {
     required String startAddress,
     required String endAddress,
     required DateTime departureTime,
@@ -19,13 +20,20 @@ class TripManagerService {
     // Ensure departure time is not in the past for the API call.
     // If it is, clamp it to the future so the routing API doesn't error.
     var safeDepartureTime = departureTime;
-    if (safeDepartureTime.isBefore(DateTime.now().add(const Duration(minutes: 1)))) {
+    if (safeDepartureTime.isBefore(
+      DateTime.now().add(const Duration(minutes: 1)),
+    )) {
       safeDepartureTime = DateTime.now().add(const Duration(minutes: 5));
     }
 
     // 1. Fetch Route
-    final routeData = await _mapService.fetchRoutePolyline(session, startAddress, endAddress, safeDepartureTime);
-    
+    final routeData = await _mapService.fetchRoutePolyline(
+      session,
+      startAddress,
+      endAddress,
+      safeDepartureTime,
+    );
+
     // 2. Create Trip Entry (In Memory)
     var trip = Trip(
       description: 'Trip from $startAddress to $endAddress',
@@ -59,7 +67,9 @@ class TripManagerService {
       rawTimeSlices,
     );
 
-    final candidateStops = candidateStopsUnfiltered.where((stop) => stop['detourTimeMinutes']! < 30 ).toList();
+    final candidateStops = candidateStopsUnfiltered
+        .where((stop) => stop['detourTimeMinutes']! < 30)
+        .toList();
 
     // 5. Curate Stops via AI
     final curatedStops = await _aiService.generateStops(
@@ -74,21 +84,23 @@ class TripManagerService {
     List<Stop> stops = [];
     int tempId = 1;
     for (var data in curatedStops) {
-      stops.add(Stop(
-        id: tempId++, // Assign fake ID for UI uniqueness
-        tripId: 0,
-        name: data['name'],
-        slotTitle: data['slotTitle'],
-        address: data['address'] ?? '',
-        latitude: (data['latitude'] as num).toDouble(),
-        longitude: (data['longitude'] as num).toDouble(),
-        category: data['category'] ?? 'general',
-        butlerNote: data['butlerNote'],
-        status: StopStatus.untouched,
-        priceLevel: PriceLevel.values.byName(data['priceLevel'] ?? 'low'),
-        detourTimeMinutes: data['detourTimeMinutes'],
-        rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
-      ));
+      stops.add(
+        Stop(
+          id: tempId++, // Assign fake ID for UI uniqueness
+          tripId: 0,
+          name: data['name'],
+          slotTitle: data['slotTitle'],
+          address: data['address'] ?? '',
+          latitude: (data['latitude'] as num).toDouble(),
+          longitude: (data['longitude'] as num).toDouble(),
+          category: data['category'] ?? 'general',
+          butlerNote: data['butlerNote'],
+          status: StopStatus.untouched,
+          priceLevel: PriceLevel.values.byName(data['priceLevel'] ?? 'low'),
+          detourTimeMinutes: data['detourTimeMinutes'],
+          rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
+        ),
+      );
     }
 
     trip.stops = stops;

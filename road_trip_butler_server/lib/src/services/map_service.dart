@@ -9,13 +9,18 @@ class RouteData {
   final int durationMinutes;
   final List<Map<String, dynamic>> routePoints;
 
-  RouteData({required this.polyline, required this.anchors, required this.durationMinutes, required this.routePoints});
+  RouteData({
+    required this.polyline,
+    required this.anchors,
+    required this.durationMinutes,
+    required this.routePoints,
+  });
 }
 
 class MapService {
   Future<RouteData> fetchRoutePolyline(
-    Session session, 
-    String startAddress, 
+    Session session,
+    String startAddress,
     String endAddress,
     DateTime departureTime,
   ) async {
@@ -26,7 +31,9 @@ class MapService {
     }
 
     // 2. Construct the URL for Google Routes API
-    final url = Uri.parse('https://routes.googleapis.com/directions/v2:computeRoutes');
+    final url = Uri.parse(
+      'https://routes.googleapis.com/directions/v2:computeRoutes',
+    );
 
     try {
       final response = await http.post(
@@ -34,7 +41,8 @@ class MapService {
         headers: {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': apiKey,
-          'X-Goog-FieldMask': 'routes.duration,routes.polyline.encodedPolyline,routes.legs.steps.staticDuration,routes.legs.steps.polyline.encodedPolyline,routes.legs.steps.endLocation',
+          'X-Goog-FieldMask':
+              'routes.duration,routes.polyline.encodedPolyline,routes.legs.steps.staticDuration,routes.legs.steps.polyline.encodedPolyline,routes.legs.steps.endLocation',
         },
         body: jsonEncode({
           'origin': {'address': startAddress},
@@ -46,13 +54,17 @@ class MapService {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to connect to Google Routes API: ${response.statusCode} - ${response.body}');
+        throw Exception(
+          'Failed to connect to Google Routes API: ${response.statusCode} - ${response.body}',
+        );
       }
 
       final data = jsonDecode(response.body);
 
       if (data['routes'] == null || (data['routes'] as List).isEmpty) {
-        throw Exception('No route found between "$startAddress" and "$endAddress".');
+        throw Exception(
+          'No route found between "$startAddress" and "$endAddress".',
+        );
       }
 
       final route = data['routes'][0];
@@ -77,17 +89,28 @@ class MapService {
             for (var step in leg['steps']) {
               String stepDurationStr = step['staticDuration'] ?? '0s';
               if (stepDurationStr.endsWith('s')) {
-                stepDurationStr = stepDurationStr.substring(0, stepDurationStr.length - 1);
+                stepDurationStr = stepDurationStr.substring(
+                  0,
+                  stepDurationStr.length - 1,
+                );
               }
               int stepSeconds = int.tryParse(stepDurationStr) ?? 0;
 
               String stepPolyline = step['polyline']?['encodedPolyline'] ?? '';
-              List<Map<String, double>> stepPoints = _decodePolyline(stepPolyline);
+              List<Map<String, double>> stepPoints = _decodePolyline(
+                stepPolyline,
+              );
 
               if (stepPoints.isNotEmpty) {
                 for (int i = 0; i < stepPoints.length; i++) {
-                  int pointTime = currentElapsedSeconds + (stepSeconds * (i + 1) / stepPoints.length).round();
-                  routePoints.add({'lat': stepPoints[i]['lat'], 'lng': stepPoints[i]['lng'], 'elapsedSeconds': pointTime});
+                  int pointTime =
+                      currentElapsedSeconds +
+                      (stepSeconds * (i + 1) / stepPoints.length).round();
+                  routePoints.add({
+                    'lat': stepPoints[i]['lat'],
+                    'lng': stepPoints[i]['lng'],
+                    'elapsedSeconds': pointTime,
+                  });
                 }
                 currentElapsedSeconds += stepSeconds;
               }
@@ -106,16 +129,23 @@ class MapService {
             final endLocation = steps[i]['endLocation']['latLng'];
             if (endLocation != null) {
               // Convert to legacy format {lat: ..., lng: ...} string representation
-              routeAnchors.add({
-                'lat': endLocation['latitude'],
-                'lng': endLocation['longitude']
-              }.toString());
+              routeAnchors.add(
+                {
+                  'lat': endLocation['latitude'],
+                  'lng': endLocation['longitude'],
+                }.toString(),
+              );
             }
           }
         }
       }
 
-      return RouteData(polyline: polyline, anchors: routeAnchors, durationMinutes: durationMinutes, routePoints: routePoints);
+      return RouteData(
+        polyline: polyline,
+        anchors: routeAnchors,
+        durationMinutes: durationMinutes,
+        routePoints: routePoints,
+      );
     } catch (e) {
       session.log('Error fetching polyline: $e', level: LogLevel.error);
       rethrow;
@@ -158,27 +188,30 @@ class MapService {
 
       if (segmentPoints.isEmpty) continue;
 
-      int baselineDurationSeconds = max(0, actualEndSeconds - actualStartSeconds);
+      int baselineDurationSeconds = max(
+        0,
+        actualEndSeconds - actualStartSeconds,
+      );
       String encodedSegment = _encodePolyline(segmentPoints);
 
       // 3. Call Places API (New)
-      final url = Uri.parse('https://places.googleapis.com/v1/places:searchText');
-  
+      final url = Uri.parse(
+        'https://places.googleapis.com/v1/places:searchText',
+      );
+
       try {
         final response = await http.post(
           url,
           headers: {
             'Content-Type': 'application/json',
             'X-Goog-Api-Key': apiKey,
-            'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.priceLevel,routingSummaries',
+            'X-Goog-FieldMask':
+                'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.priceLevel,routingSummaries',
           },
           body: jsonEncode({
             "textQuery": query,
             "searchAlongRouteParameters": {
-              "polyline": {
-                "encodedPolyline": encodedSegment
-              },
-              
+              "polyline": {"encodedPolyline": encodedSegment},
             },
             // "routingParameters": {
             //   "origin": {
@@ -195,41 +228,59 @@ class MapService {
           final routingSummaries = data['routingSummaries'] as List?;
           //print(routingSummaries);
           if (places != null) {
-             for (int i = 0; i < places.length; i++) {
-                final place = places[i];
-                int detourMinutes = 0;
+            for (int i = 0; i < places.length; i++) {
+              final place = places[i];
+              int detourMinutes = 0;
 
-                if (routingSummaries != null && i < routingSummaries.length) {
-                  final legs = routingSummaries[i]['legs'] as List?;
-                  if (legs != null && legs.length == 2) {
-                    final durationToPlace = _parseDurationSeconds(legs[0]['duration']);
-                    final durationFromPlace = _parseDurationSeconds(legs[1]['duration']);
-                    final detourSeconds = (durationToPlace + durationFromPlace) - baselineDurationSeconds;
-                    detourMinutes = max(0, (detourSeconds / 60).round());
-                    //print(detourMinutes);
-                  }
+              if (routingSummaries != null && i < routingSummaries.length) {
+                final legs = routingSummaries[i]['legs'] as List?;
+                if (legs != null && legs.length == 2) {
+                  final durationToPlace = _parseDurationSeconds(
+                    legs[0]['duration'],
+                  );
+                  final durationFromPlace = _parseDurationSeconds(
+                    legs[1]['duration'],
+                  );
+                  final detourSeconds =
+                      (durationToPlace + durationFromPlace) -
+                      baselineDurationSeconds;
+                  detourMinutes = max(0, (detourSeconds / 60).round());
+                  //print(detourMinutes);
                 }
-                // print(place['priceLevel']);
-                // print(place['rating'])
-                allStops.add({
-                  'slotTitle': query,
-                  'name': place['displayName']?['text'] ?? 'Unknown',
-                  'address': place['formattedAddress'] ?? '',
-                  'latitude': (place['location']?['latitude'] as num?)?.toDouble() ?? 0.0,
-                  'longitude': (place['location']?['longitude'] as num?)?.toDouble() ?? 0.0,
-                  'category': (place['types'] as List?)?.isNotEmpty == true ? place['types'][0] : 'general',
-                  'butlerNote': 'Rated ${place['rating'] ?? 'N/A'} stars. Matched "$query".',
-                  'priceLevel': _mapPriceLevel(place['priceLevel']),
-                  'rating': place['rating'],
-                  'detourTimeMinutes': detourMinutes,
-                });
-             }
+              }
+              // print(place['priceLevel']);
+              // print(place['rating'])
+              allStops.add({
+                'slotTitle': query,
+                'name': place['displayName']?['text'] ?? 'Unknown',
+                'address': place['formattedAddress'] ?? '',
+                'latitude':
+                    (place['location']?['latitude'] as num?)?.toDouble() ?? 0.0,
+                'longitude':
+                    (place['location']?['longitude'] as num?)?.toDouble() ??
+                    0.0,
+                'category': (place['types'] as List?)?.isNotEmpty == true
+                    ? place['types'][0]
+                    : 'general',
+                'butlerNote':
+                    'Rated ${place['rating'] ?? 'N/A'} stars. Matched "$query".',
+                'priceLevel': _mapPriceLevel(place['priceLevel']),
+                'rating': place['rating'],
+                'detourTimeMinutes': detourMinutes,
+              });
+            }
           }
         } else {
-          session.log('Failed to search places for "$query": ${response.body}', level: LogLevel.warning);
+          session.log(
+            'Failed to search places for "$query": ${response.body}',
+            level: LogLevel.warning,
+          );
         }
       } catch (e) {
-        session.log('Error searching places for "$query": $e', level: LogLevel.error);
+        session.log(
+          'Error searching places for "$query": $e',
+          level: LogLevel.error,
+        );
       }
     }
 

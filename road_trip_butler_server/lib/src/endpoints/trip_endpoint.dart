@@ -3,7 +3,8 @@ import 'package:serverpod/serverpod.dart';
 import '../services/trip_manager_service.dart';
 
 class TripEndpoint extends Endpoint {
-  Future<Trip> createTrip(Session session, {
+  Future<Trip> createTrip(
+    Session session, {
     required String startAddress,
     required String endAddress,
     required DateTime departureTime,
