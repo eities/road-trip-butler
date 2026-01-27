@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: road_trip_butler_server
-        run: flutter pub get
+        run: dart pub get
 
       - name: Check formatting
         working-directory: road_trip_butler_server
