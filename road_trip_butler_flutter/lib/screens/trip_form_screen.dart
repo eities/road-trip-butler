@@ -185,15 +185,62 @@ class _TripFormScreenState extends State<TripFormScreen> {
             expandedHeight: 200,
             actions: [
               IconButton(
-                icon: const Icon(Icons.history),
+                icon: const Icon(Icons.history, color: Colors.white, size: 32),
                 onPressed: _showSavedTrips,
                 tooltip: 'Saved Trips',
               ),
             ],
-            flexibleSpace: const FlexibleSpaceBar(
-              title: Text("Road Trip Butler"),
-              centerTitle: true,
-              background: Icon(Icons.directions_car, size: 80, color: Colors.blueGrey),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+      fit: StackFit.expand,
+      children: [
+        // 1. The Main Image
+        Image.asset(
+          'assets/images/road-background.jpg',
+          fit: BoxFit.cover,
+        ),
+        // 2. The Darkening Overlay (Ensures your title is readable)
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.black54, Colors.transparent, Colors.black26],
+            ),
+          ),
+        ),
+        // 3. Gradient Fade Transition
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 40,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Theme.of(context).scaffoldBackgroundColor.withOpacity(0.0),
+                  Theme.of(context).scaffoldBackgroundColor,
+                ],
+              ),
+            ),
+          ),
+        ),
+        const Center(
+          child: Text(
+            "Road Trip Butler",
+            style: TextStyle(
+              fontFamily: 'Arvo',
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ],
+              ),
             ),
           ),
           SliverToBoxAdapter(
