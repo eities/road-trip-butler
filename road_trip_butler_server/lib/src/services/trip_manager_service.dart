@@ -16,8 +16,15 @@ class TripManagerService {
     required String personalityDescription,
     required String preferences,
   }) async {
+    // Ensure departure time is not in the past for the API call.
+    // If it is, clamp it to the future so the routing API doesn't error.
+    var safeDepartureTime = departureTime;
+    if (safeDepartureTime.isBefore(DateTime.now().add(const Duration(minutes: 1)))) {
+      safeDepartureTime = DateTime.now().add(const Duration(minutes: 5));
+    }
+
     // 1. Fetch Route
-    final routeData = await _mapService.fetchRoutePolyline(session, startAddress, endAddress, departureTime);
+    final routeData = await _mapService.fetchRoutePolyline(session, startAddress, endAddress, safeDepartureTime);
     
     // 2. Create Trip Entry (In Memory)
     var trip = Trip(

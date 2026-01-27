@@ -155,8 +155,6 @@ class MapService {
           actualEndSeconds = t;
         }
       }
-      print(actualStartSeconds / 60);
-      print(actualEndSeconds / 60);
 
       if (segmentPoints.isEmpty) continue;
 

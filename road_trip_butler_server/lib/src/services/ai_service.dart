@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:serverpod/serverpod.dart';
 import 'package:http/http.dart' as http;
 
@@ -52,7 +51,6 @@ Every object in the array must follow this structure to ensure mathematical accu
 
 
 """;
-  print(departureTime);
     // Define generationConfig as a Map so you can add missing parameters
     final generationConfig = {
       'responseMimeType': 'application/json',
@@ -114,7 +112,6 @@ Every object in the array must follow this structure to ensure mathematical accu
     if (text == null) {
       throw Exception('Gemini returned empty response');
     }
-    print(text);
 
     return jsonDecode(text);
   }
