@@ -23,9 +23,13 @@ class LocalStorageService {
   Future<void> saveTrip(Trip trip) async {
     if (!_isInitialized) await init();
     
-    // Use trip ID as key if available, otherwise a generated timestamp key
-    final key = trip.id?.toString() ?? 'local_${DateTime.now().millisecondsSinceEpoch}';
+    // Ensure trip has an ID. If it's null, assign a unique ID based on time.
+    if (trip.id == null) {
+      trip.id = DateTime.now().millisecondsSinceEpoch;
+    }
     
+    final key = trip.id.toString();
+
     // Serialize trip to JSON using Serverpod's toJson
     final jsonMap = trip.toJson();
     final jsonString = jsonEncode(jsonMap);
@@ -41,7 +45,6 @@ class LocalStorageService {
     for (var jsonString in _box.values) {
       try {
         final jsonMap = jsonDecode(jsonString);
-        // Deserialize using Serverpod's fromJson
         final trip = Trip.fromJson(jsonMap);
         trips.add(trip);
       } catch (e) {

@@ -19,8 +19,8 @@ class TripManagerService {
     // 1. Fetch Route
     final routeData = await _mapService.fetchRoutePolyline(session, startAddress, endAddress, departureTime);
     
-    // 2. Create Trip Entry
-    var trip = await Trip.db.insertRow(session, Trip(
+    // 2. Create Trip Entry (In Memory)
+    var trip = Trip(
       description: 'Trip from $startAddress to $endAddress',
       startAddress: startAddress,
       endAddress: endAddress,
@@ -29,7 +29,7 @@ class TripManagerService {
       preferences: preferences,
       totalDurationMinutes: routeData.durationMinutes,
       personality: personality,
-    ));
+    );
 
     // 3. Generate Time Slices via AI
 
@@ -63,12 +63,13 @@ class TripManagerService {
       departureTime: localDepartureTime,
     );
 
-    print(curatedStops);
-
-    // 6. Save Stops
+    // 6. Create Stops (In Memory)
+    List<Stop> stops = [];
+    int tempId = 1;
     for (var data in curatedStops) {
-      await Stop.db.insertRow(session, Stop(
-        tripId: trip.id!,
+      stops.add(Stop(
+        id: tempId++, // Assign fake ID for UI uniqueness
+        tripId: 0,
         name: data['name'],
         slotTitle: data['slotTitle'],
         address: data['address'] ?? '',
@@ -80,17 +81,11 @@ class TripManagerService {
         priceLevel: PriceLevel.values.byName(data['priceLevel'] ?? 'low'),
         detourTimeMinutes: data['detourTimeMinutes'],
         rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
-        //estimatedArrivalTime: departureTime, 
       ));
     }
 
-    // 5. Final Fetch with Includes
-    final finalTrip = await Trip.db.findById(
-      session,
-      trip.id!,
-      include: Trip.include(stops: Stop.includeList()),
-    );
+    trip.stops = stops;
 
-    return finalTrip!;
+    return trip;
   }
 }
