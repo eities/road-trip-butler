@@ -123,11 +123,38 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
       return;
     }
 
+    // Sort stops by their position along the route polyline to ensure correct order
+    if (widget.trip.polyline.isNotEmpty && selectedStops.length > 1) {
+      final routePoints = _decodePolyline(widget.trip.polyline);
+      selectedStops.sort((a, b) {
+        return _getClosestPolylineIndex(routePoints, a)
+            .compareTo(_getClosestPolylineIndex(routePoints, b));
+      });
+    }
+
     await MapUtils().exportToGoogleMaps(
       selectedStops,
       startAddress: widget.trip.startAddress,
       endAddress: widget.trip.endAddress,
     );
+  }
+
+  int _getClosestPolylineIndex(List<LatLng> polyline, Stop stop) {
+    int closestIndex = -1;
+    double minDistance = double.infinity;
+
+    for (int i = 0; i < polyline.length; i++) {
+      final point = polyline[i];
+      final dx = point.latitude - stop.latitude;
+      final dy = point.longitude - stop.longitude;
+      final dist = dx * dx + dy * dy;
+
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestIndex = i;
+      }
+    }
+    return closestIndex;
   }
 
   @override

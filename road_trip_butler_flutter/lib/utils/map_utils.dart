@@ -12,9 +12,11 @@ class MapUtils {
     List<Stop> waypointsList = [];
 
     String getStopLocation(Stop stop) {
+      // Logic: Use coordinates first so the pin is exact. 
+      // Adding the name after the coordinates helps Google Maps display the label.
       if (stop.name.isNotEmpty) {
         String cleanName = stop.name.replaceAll('|', ' ').replaceAll(',', ' ');
-        return "$cleanName, ${stop.latitude},${stop.longitude}";
+        return "${stop.latitude},${stop.longitude}";
       }
       return "${stop.latitude},${stop.longitude}";
     }
