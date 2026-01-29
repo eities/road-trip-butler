@@ -25,7 +25,8 @@ class MapService {
     DateTime departureTime,
   ) async {
     // 1. Get API Key from Serverpod passwords
-    final apiKey = session.passwords['googleMapsApiKey'];
+    //final apiKey = session.passwords['googleMapsApiKey'];
+    final apiKey = await session.serverpod.getPassword('googleMapsApiKey');
     if (apiKey == null) {
       throw Exception('Google Maps API key is missing in passwords.yaml');
     }
@@ -157,7 +158,8 @@ class MapService {
     List<Map<String, dynamic>> routePoints,
     List<dynamic> timeSlices,
   ) async {
-    final apiKey = session.passwords['googleMapsApiKey'];
+    // final apiKey = session.passwords['googleMapsApiKey'];
+    final apiKey = await session.serverpod.getPassword('googleMapsApiKey');
     if (apiKey == null) {
       throw Exception('Google Maps API key is missing in passwords.yaml');
     }

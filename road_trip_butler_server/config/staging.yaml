@@ -11,21 +11,21 @@
 # Configuration for the main API server.
 apiServer:
   port: 8080
-  publicHost: api-staging.examplepod.com
+  publicHost: https://road-trip-butler.api.serverpod.space/
   publicPort: 443
   publicScheme: https
 
 # Configuration for the Insights server.
 insightsServer:
   port: 8081
-  publicHost: insights-staging.examplepod.com
+  publicHost: https://road-trip-butler.insights.serverpod.space/
   publicPort: 443
   publicScheme: https
 
 # Configuration for the web server.
 webServer:
   port: 8082
-  publicHost: app-staging.examplepod.com
+  publicHost: https://road-trip-butler.serverpod.space/
   publicPort: 443
   publicScheme: https
 

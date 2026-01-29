@@ -17,7 +17,8 @@ class AiService {
     required String departureTime,
     required List<String> routeAnchors,
   }) async {
-    final apiKey = session.passwords['geminiApiKey'];
+    //final apiKey = session.passwords['geminiApiKey'];
+    final apiKey = await session.serverpod.getPassword('geminiApiKey');
     if (apiKey == null) {
       throw Exception('Gemini API key is missing in passwords.yaml');
     }
@@ -144,7 +145,8 @@ Every object in the array must follow this structure to ensure mathematical accu
     required String departureTime,
     required List<Map<String, dynamic>> candidateStops,
   }) async {
-    final apiKey = session.passwords['geminiApiKey'];
+    //final apiKey = session.passwords['geminiApiKey'];
+    final apiKey = await session.serverpod.getPassword('geminiApiKey');
     if (apiKey == null) {
       throw Exception('Gemini API key is missing in passwords.yaml');
     }
