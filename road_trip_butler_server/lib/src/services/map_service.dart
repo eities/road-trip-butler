@@ -25,7 +25,6 @@ class MapService {
     DateTime departureTime,
   ) async {
     // 1. Get API Key from Serverpod passwords
-    //final apiKey = session.passwords['googleMapsApiKey'];
     final apiKey = await session.serverpod.getPassword('googleMapsApiKey');
     if (apiKey == null) {
       throw Exception('Google Maps API key is missing in passwords.yaml');
@@ -55,8 +54,16 @@ class MapService {
       );
 
       if (response.statusCode != 200) {
+        String errorMsg = response.body;
+        try {
+          final jsonErr = jsonDecode(response.body);
+          if (jsonErr['error'] != null && jsonErr['error']['message'] != null) {
+            errorMsg = jsonErr['error']['message'];
+          }
+        } catch (_) {}
+
         throw Exception(
-          'Failed to connect to Google Routes API: ${response.statusCode} - ${response.body}',
+          'Failed to connect to Google Routes API: ${response.statusCode} - $errorMsg',
         );
       }
 
@@ -158,7 +165,6 @@ class MapService {
     List<Map<String, dynamic>> routePoints,
     List<dynamic> timeSlices,
   ) async {
-    // final apiKey = session.passwords['googleMapsApiKey'];
     final apiKey = await session.serverpod.getPassword('googleMapsApiKey');
     if (apiKey == null) {
       throw Exception('Google Maps API key is missing in passwords.yaml');
@@ -215,12 +221,6 @@ class MapService {
             "searchAlongRouteParameters": {
               "polyline": {"encodedPolyline": encodedSegment},
             },
-            // "routingParameters": {
-            //   "origin": {
-            //     "latitude": segmentPoints.first['lat'],
-            //     "longitude": segmentPoints.first['lng']
-            //   }
-            // },
           }),
         );
 
@@ -228,7 +228,6 @@ class MapService {
           final data = jsonDecode(response.body);
           final places = data['places'] as List?;
           final routingSummaries = data['routingSummaries'] as List?;
-          //print(routingSummaries);
           if (places != null) {
             for (int i = 0; i < places.length; i++) {
               final place = places[i];
@@ -247,11 +246,8 @@ class MapService {
                       (durationToPlace + durationFromPlace) -
                       baselineDurationSeconds;
                   detourMinutes = max(0, (detourSeconds / 60).round());
-                  //print(detourMinutes);
                 }
               }
-              // print(place['priceLevel']);
-              // print(place['rating'])
               allStops.add({
                 'slotTitle': query,
                 'name': place['displayName']?['text'] ?? 'Unknown',

@@ -17,7 +17,6 @@ class AiService {
     required String departureTime,
     required List<String> routeAnchors,
   }) async {
-    //final apiKey = session.passwords['geminiApiKey'];
     final apiKey = await session.serverpod.getPassword('geminiApiKey');
     if (apiKey == null) {
       throw Exception('Gemini API key is missing in passwords.yaml');
@@ -41,7 +40,7 @@ STRICT QUERY FORMATTING:
 - No city/state names.
 - Use | for multiple intents.
 - Minimum slice duration: 120 minutes.
-- Do not stop for the first 60 minutes of the trip.
+- Do not stop for the first 30 minutes of the trip.
 
 STRICT JSON FORMAT:
 Every object in the array must follow this structure to ensure mathematical accuracy:
@@ -81,8 +80,6 @@ Every object in the array must follow this structure to ensure mathematical accu
           ],
         },
       },
-      // Example: Add your missing parameter here
-      // 'thinking_config': {'include_thoughts': true, 'budget_token_count': 1024},
     };
 
     final url = Uri.parse('$_baseUrl?key=$apiKey');
@@ -117,13 +114,17 @@ Every object in the array must follow this structure to ensure mathematical accu
       }),
     );
 
-    //   // DEBUG LOG: What did we get back?
-    // print("----------- RESPONSE STATUS: ${response.statusCode} -----------");
-    // print("BODY: ${response.body}");
-
     if (response.statusCode != 200) {
+      String errorMsg = response.body;
+      try {
+        final jsonErr = jsonDecode(response.body);
+        if (jsonErr['error'] != null && jsonErr['error']['message'] != null) {
+          errorMsg = jsonErr['error']['message'];
+        }
+      } catch (_) {}
+      
       throw Exception(
-        'Gemini API Error: ${response.statusCode} ${response.body}',
+        'Gemini API Error: ${response.statusCode} - $errorMsg',
       );
     }
 
@@ -145,7 +146,6 @@ Every object in the array must follow this structure to ensure mathematical accu
     required String departureTime,
     required List<Map<String, dynamic>> candidateStops,
   }) async {
-    //final apiKey = session.passwords['geminiApiKey'];
     final apiKey = await session.serverpod.getPassword('geminiApiKey');
     if (apiKey == null) {
       throw Exception('Gemini API key is missing in passwords.yaml');
@@ -221,7 +221,6 @@ Every object in the array must follow this structure to ensure mathematical accu
           ],
         },
       },
-      // Add your custom parameters here
     };
 
     final url = Uri.parse('$_baseUrl?key=$apiKey');
@@ -247,8 +246,16 @@ Every object in the array must follow this structure to ensure mathematical accu
     );
 
     if (response.statusCode != 200) {
+      String errorMsg = response.body;
+      try {
+        final jsonErr = jsonDecode(response.body);
+        if (jsonErr['error'] != null && jsonErr['error']['message'] != null) {
+          errorMsg = jsonErr['error']['message'];
+        }
+      } catch (_) {}
+
       throw Exception(
-        'Gemini API Error: ${response.statusCode} ${response.body}',
+        'Gemini API Error: ${response.statusCode} - $errorMsg',
       );
     }
 

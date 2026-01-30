@@ -3,7 +3,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:road_trip_butler_client/road_trip_butler_client.dart';
 import 'package:collection/collection.dart';
 import 'package:road_trip_butler_flutter/screens/trip_map_screen.dart';
-import '../main.dart';
 import '../utils/map_utils.dart';
 import '../utils/local_storage_utils.dart';
 
@@ -17,41 +16,11 @@ class TripBuildingScreen extends StatefulWidget {
 }
 
 class _TripBuildingScreenState extends State<TripBuildingScreen> {
-  late GoogleMapController _mapController;
-  final Set<Polyline> _polylines = {};
-  final Set<Marker> _markers = {};
-
   final LocalStorageService _localStorage = LocalStorageService();
 
   @override
   void initState() {
     super.initState();
-  }
-
-  void _initializeMapData() {
-    // 1. Decode the Polyline
-      final points = _decodePolyline(widget.trip.polyline);
-      _polylines.add(
-        Polyline(
-          polylineId: const PolylineId('trip_route'),
-          points: points,
-          color: Colors.blueAccent,
-          width: 5,
-        ),
-      );
-    
-
-    // 2. Add Markers for stops
-    // Note: Assuming 'stops' exists on Trip and has lat/lng fields based on your description
-  for (var stop in widget.trip.stops!) { // Serverpod lists are often nullable, hence the !
-    _markers.add(
-      Marker(
-        markerId: MarkerId(stop.id.toString()),
-        position: LatLng(stop.latitude, stop.longitude),
-        infoWindow: InfoWindow(title: stop.name, snippet: stop.butlerNote),
-      ),
-    );
-  }
   }
 
   /// Decodes a Google Maps encoded polyline string into a list of LatLng
@@ -160,12 +129,8 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
   @override
   Widget build(BuildContext context) {
     // Group the stops by their slotTitle (e.g., "The Mid-Day Pitstop")
-// Use the groupBy function from the collection package
   final groupedStops = groupBy(widget.trip.stops!, (Stop stop) => stop.slotTitle);
     
-    // Placeholder data structure to allow compilation until model is updated
-    //final Map<String, List<dynamic>> groupedStops = {}; 
-
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _exportToGoogleMaps,
@@ -208,7 +173,7 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
                   initiallyExpanded: true,
                   children: [
                     SizedBox(
-                      height: 240, // Height for the PageView cards
+                      height: 240, 
                       child: PageView.builder(
                         physics: const BouncingScrollPhysics(),
                         controller: PageController(viewportFraction: 0.9),

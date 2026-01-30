@@ -35,7 +35,6 @@ class _TripMapScreenState extends State<TripMapScreen> {
 
   void _initMapData() {
     // 1. Decode Polyline
-    //PolylinePoints polylinePoints = PolylinePoints();
     List<PointLatLng> result = PolylinePoints.decodePolyline(widget.trip.polyline);
 
     if (result.isNotEmpty) {
@@ -144,7 +143,6 @@ class _TripMapScreenState extends State<TripMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //appBar: AppBar(title: const Text("Your Butler-Curated Journey")),
       body: GoogleMap(
         onMapCreated: _onMapCreated,
         initialCameraPosition: CameraPosition(

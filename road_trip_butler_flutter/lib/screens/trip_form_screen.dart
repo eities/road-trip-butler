@@ -1,9 +1,8 @@
-// lib/screens/trip_form_screen.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:road_trip_butler_client/road_trip_butler_client.dart';
 import 'trip_building_screen.dart';
-import 'trip_map_screen.dart';
 import '../main.dart';
 import '../utils/local_storage_utils.dart';
 
@@ -42,7 +41,7 @@ class _TripFormScreenState extends State<TripFormScreen> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
 
-    if (pickedDate == null) return; // User cancelled
+    if (pickedDate == null) return; 
 
     // 2. Pick the Time
     if (!mounted) return;
@@ -51,7 +50,7 @@ class _TripFormScreenState extends State<TripFormScreen> {
       initialTime: TimeOfDay.fromDateTime(_selectedDate),
     );
 
-    if (pickedTime == null) return; // User cancelled
+    if (pickedTime == null) return; 
 
     // 3. Combine them into one DateTime object
     setState(() {
@@ -88,16 +87,6 @@ class _TripFormScreenState extends State<TripFormScreen> {
     );
 
     try {
-      // 2. Build the Trip object from your form fields
-      // final trip = Trip(
-      //   description: "${_startController.text} to ${_endController.text}",
-      //   startAddress: _startController.text,
-      //   endAddress: _endController.text,
-      //   departureTime: _selectedDate,
-      //   personality: _selectedPersona,
-      // );
-
-
       final startDateTime = DateTime.parse(_selectedDate.toString()).toLocal();
       final localDepartureTime = DateFormat('h:mm a').format(startDateTime);
   
@@ -122,7 +111,6 @@ class _TripFormScreenState extends State<TripFormScreen> {
       // 5. Navigate to the Selection Screen with the REAL data from the server
       await Navigator.of(context).push(
         MaterialPageRoute(
-          //builder: (context) => TripMapScreen(trip: completedTrip),
           builder: (context) => TripBuildingScreen(trip: completedTrip),
         ),
       );
@@ -130,9 +118,36 @@ class _TripFormScreenState extends State<TripFormScreen> {
       // Save again upon return to capture any changes made to stops (selection status)
       await _localStorage.saveTrip(completedTrip);
     } catch (e) {
-      Navigator.of(context).pop(); // Close dialog on error
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Close loading dialog
+
+      String errorMessage = "An unexpected error occurred.";
+      final String errorString = e.toString();
+
+      if (e is TimeoutException || errorString.contains("TimeoutException")) {
+        errorMessage = "The request timed out. The Butler is taking too long to think. Please try again.";
+      } else if (errorString.contains("SocketException") || errorString.contains("Connection refused") || errorString.contains("Network is unreachable")) {
+        errorMessage = "Unable to connect to the server. Please check your internet connection.";
+      } else if (errorString.contains("No route found")) {
+        errorMessage = "Could not find a driving route between those locations.";
+      } else if (errorString.contains("Gemini API") || errorString.contains("AI Service")) {
+        errorMessage = "The AI Butler is currently unavailable. Please try again later.";
+      } else {
+        // Clean up generic "Exception: " prefix
+        errorMessage = "Something went wrong. Please ty again later.";
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Butler Error: $e")),
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Retry',
+            textColor: Colors.white,
+            onPressed: _planTrip,
+          ),
+        ),
       );
     }
   }
