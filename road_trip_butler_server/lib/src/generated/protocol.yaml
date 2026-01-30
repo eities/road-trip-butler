@@ -10,5 +10,3 @@ jwtRefresh:
   - refreshAccessToken:
 trip:
   - createTrip:
-greeting:
-  - hello:

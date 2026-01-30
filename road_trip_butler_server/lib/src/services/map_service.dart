@@ -48,8 +48,8 @@ class MapService {
           'origin': {'address': startAddress},
           'destination': {'address': endAddress},
           'travelMode': 'DRIVE',
-          'routingPreference': 'TRAFFIC_AWARE',
-          'departureTime': departureTime.toUtc().toIso8601String(),
+          'routingPreference': 'TRAFFIC_UNAWARE',
+          //'departureTime': departureTime.toUtc().toIso8601String(),
         }),
       );
 

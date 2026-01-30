@@ -35,6 +35,7 @@ TASKS:
 4. Dinner Window (optional): Default 4:00 PM - 7:00 PM.
 5. Look for roadside attractions, roadside viewpoints, travel stops, and quick stops on the route.
 6. Create 5-8 total time slices, time slices can overlap.
+7. Aim for a stop option every 2 hours.
 
 STRICT QUERY FORMATTING:
 - No city/state names.

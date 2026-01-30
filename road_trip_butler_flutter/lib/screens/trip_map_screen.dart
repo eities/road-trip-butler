@@ -5,8 +5,9 @@ import 'package:road_trip_butler_client/road_trip_butler_client.dart';
 
 class TripMapScreen extends StatefulWidget {
   final Trip trip;
+  final Stop? focusedStop;
 
-  const TripMapScreen({super.key, required this.trip});
+  const TripMapScreen({super.key, required this.trip, this.focusedStop});
 
   @override
   State<TripMapScreen> createState() => _TripMapScreenState();
@@ -14,6 +15,7 @@ class TripMapScreen extends StatefulWidget {
 
 class _TripMapScreenState extends State<TripMapScreen> {
   late GoogleMapController _mapController;
+  bool _isMapReady = false;
   final Set<Polyline> _polylines = {};
   final Set<Marker> _markers = {};
   List<LatLng> _polylineCoordinates = [];
@@ -31,6 +33,10 @@ class _TripMapScreenState extends State<TripMapScreen> {
     setState(() {
       _generateMarkers();
     });
+
+    if (widget.focusedStop != oldWidget.focusedStop && widget.focusedStop != null) {
+      _zoomToChapter(widget.focusedStop!);
+    }
   }
 
   void _initMapData() {
@@ -58,19 +64,76 @@ class _TripMapScreenState extends State<TripMapScreen> {
     if (widget.trip.stops != null) {
       for (var stop in widget.trip.stops!) {
         final isSelected = stop.status == StopStatus.selected;
+        final isFocused = widget.focusedStop?.id == stop.id;
+        
+        double hue;
+        if (isSelected) {
+          hue = BitmapDescriptor.hueGreen;
+        } else if (isFocused) {
+          hue = BitmapDescriptor.hueAzure; // Highlight focused stop
+        } else {
+          hue = BitmapDescriptor.hueRed;
+        }
+
         _markers.add(
           Marker(
             markerId: MarkerId(stop.id.toString()),
             position: LatLng(stop.latitude, stop.longitude),
             onTap: () => _showStopDetails(stop),
             infoWindow: InfoWindow(title: stop.name), // Fallback
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-              isSelected ? BitmapDescriptor.hueGreen : BitmapDescriptor.hueRed,
-            ),
+            icon: BitmapDescriptor.defaultMarkerWithHue(hue),
+            zIndex: isFocused ? 10 : 0, // Bring focused marker to front
           ),
         );
       }
     }
+  }
+
+  void _zoomToChapter(Stop stop) {
+    if (!_isMapReady) return;
+
+    // Find all stops with the same slotTitle (Chapter)
+    final chapterStops = widget.trip.stops
+            ?.where((s) => s.slotTitle == stop.slotTitle)
+            .toList() ??
+        [];
+
+    if (chapterStops.isEmpty) {
+      _animateToStop(stop);
+      return;
+    }
+
+    double minLat = chapterStops.first.latitude;
+    double maxLat = chapterStops.first.latitude;
+    double minLng = chapterStops.first.longitude;
+    double maxLng = chapterStops.first.longitude;
+
+    for (var s in chapterStops) {
+      if (s.latitude < minLat) minLat = s.latitude;
+      if (s.latitude > maxLat) maxLat = s.latitude;
+      if (s.longitude < minLng) minLng = s.longitude;
+      if (s.longitude > maxLng) maxLng = s.longitude;
+    }
+
+    // If points are identical or single point, just zoom to point. Otherwise fit bounds.
+    if (minLat == maxLat && minLng == maxLng) {
+      _animateToStop(stop);
+    } else {
+      LatLngBounds bounds = LatLngBounds(
+        southwest: LatLng(minLat, minLng),
+        northeast: LatLng(maxLat, maxLng),
+      );
+      _mapController.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
+      _mapController.showMarkerInfoWindow(MarkerId(stop.id.toString()));
+    }
+  }
+
+  void _animateToStop(Stop stop) {
+    if (!_isMapReady) return;
+    _mapController.animateCamera(
+      CameraUpdate.newLatLngZoom(LatLng(stop.latitude, stop.longitude), 14),
+    );
+    _mapController.showMarkerInfoWindow(MarkerId(stop.id.toString()));
   }
 
   void _showStopDetails(Stop stop) {
@@ -106,6 +169,7 @@ class _TripMapScreenState extends State<TripMapScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
+    _isMapReady = true;
     _fitMapToPolyline();
   }
 
@@ -143,18 +207,32 @@ class _TripMapScreenState extends State<TripMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-          target: _polylineCoordinates.isNotEmpty 
-              ? _polylineCoordinates.first 
-              : const LatLng(0, 0),
-          zoom: 12,
-        ),
-        polylines: _polylines,
-        markers: _markers,
-        myLocationButtonEnabled: false,
-        mapToolbarEnabled: false,
+      body: Stack(
+        children: [
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _polylineCoordinates.isNotEmpty
+                  ? _polylineCoordinates.first
+                  : const LatLng(0, 0),
+              zoom: 12,
+            ),
+            polylines: _polylines,
+            markers: _markers,
+            myLocationButtonEnabled: false,
+            mapToolbarEnabled: false,
+          ),
+          Positioned(
+            bottom: 16,
+            left: 16,
+            child: FloatingActionButton.small(
+              heroTag: 'reset_view_btn',
+              onPressed: _fitMapToPolyline,
+              backgroundColor: Colors.white,
+              child: const Icon(Icons.zoom_out_map, color: Colors.black87),
+            ),
+          ),
+        ],
       ),
     );
   }

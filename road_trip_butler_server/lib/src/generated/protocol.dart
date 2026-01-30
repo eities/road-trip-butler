@@ -16,12 +16,10 @@ import 'package:serverpod_auth_idp_server/serverpod_auth_idp_server.dart'
     as _i3;
 import 'package:serverpod_auth_core_server/serverpod_auth_core_server.dart'
     as _i4;
-import 'greetings/greeting.dart' as _i5;
-import 'price_level.dart' as _i6;
-import 'stop.dart' as _i7;
-import 'stop_status.dart' as _i8;
-import 'trip.dart' as _i9;
-export 'greetings/greeting.dart';
+import 'price_level.dart' as _i5;
+import 'stop.dart' as _i6;
+import 'stop_status.dart' as _i7;
+import 'trip.dart' as _i8;
 export 'price_level.dart';
 export 'stop.dart';
 export 'stop_status.dart';
@@ -262,42 +260,36 @@ class Protocol extends _i1.SerializationManagerServer {
       }
     }
 
-    if (t == _i5.Greeting) {
-      return _i5.Greeting.fromJson(data) as T;
+    if (t == _i5.PriceLevel) {
+      return _i5.PriceLevel.fromJson(data) as T;
     }
-    if (t == _i6.PriceLevel) {
-      return _i6.PriceLevel.fromJson(data) as T;
+    if (t == _i6.Stop) {
+      return _i6.Stop.fromJson(data) as T;
     }
-    if (t == _i7.Stop) {
-      return _i7.Stop.fromJson(data) as T;
+    if (t == _i7.StopStatus) {
+      return _i7.StopStatus.fromJson(data) as T;
     }
-    if (t == _i8.StopStatus) {
-      return _i8.StopStatus.fromJson(data) as T;
+    if (t == _i8.Trip) {
+      return _i8.Trip.fromJson(data) as T;
     }
-    if (t == _i9.Trip) {
-      return _i9.Trip.fromJson(data) as T;
+    if (t == _i1.getType<_i5.PriceLevel?>()) {
+      return (data != null ? _i5.PriceLevel.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i5.Greeting?>()) {
-      return (data != null ? _i5.Greeting.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i6.Stop?>()) {
+      return (data != null ? _i6.Stop.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i6.PriceLevel?>()) {
-      return (data != null ? _i6.PriceLevel.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i7.StopStatus?>()) {
+      return (data != null ? _i7.StopStatus.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i7.Stop?>()) {
-      return (data != null ? _i7.Stop.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i8.Trip?>()) {
+      return (data != null ? _i8.Trip.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i8.StopStatus?>()) {
-      return (data != null ? _i8.StopStatus.fromJson(data) : null) as T;
+    if (t == List<_i6.Stop>) {
+      return (data as List).map((e) => deserialize<_i6.Stop>(e)).toList() as T;
     }
-    if (t == _i1.getType<_i9.Trip?>()) {
-      return (data != null ? _i9.Trip.fromJson(data) : null) as T;
-    }
-    if (t == List<_i7.Stop>) {
-      return (data as List).map((e) => deserialize<_i7.Stop>(e)).toList() as T;
-    }
-    if (t == _i1.getType<List<_i7.Stop>?>()) {
+    if (t == _i1.getType<List<_i6.Stop>?>()) {
       return (data != null
-              ? (data as List).map((e) => deserialize<_i7.Stop>(e)).toList()
+              ? (data as List).map((e) => deserialize<_i6.Stop>(e)).toList()
               : null)
           as T;
     }
@@ -315,11 +307,10 @@ class Protocol extends _i1.SerializationManagerServer {
 
   static String? getClassNameForType(Type type) {
     return switch (type) {
-      _i5.Greeting => 'Greeting',
-      _i6.PriceLevel => 'PriceLevel',
-      _i7.Stop => 'Stop',
-      _i8.StopStatus => 'StopStatus',
-      _i9.Trip => 'Trip',
+      _i5.PriceLevel => 'PriceLevel',
+      _i6.Stop => 'Stop',
+      _i7.StopStatus => 'StopStatus',
+      _i8.Trip => 'Trip',
       _ => null,
     };
   }
@@ -337,15 +328,13 @@ class Protocol extends _i1.SerializationManagerServer {
     }
 
     switch (data) {
-      case _i5.Greeting():
-        return 'Greeting';
-      case _i6.PriceLevel():
+      case _i5.PriceLevel():
         return 'PriceLevel';
-      case _i7.Stop():
+      case _i6.Stop():
         return 'Stop';
-      case _i8.StopStatus():
+      case _i7.StopStatus():
         return 'StopStatus';
-      case _i9.Trip():
+      case _i8.Trip():
         return 'Trip';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -369,20 +358,17 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
     }
-    if (dataClassName == 'Greeting') {
-      return deserialize<_i5.Greeting>(data['data']);
-    }
     if (dataClassName == 'PriceLevel') {
-      return deserialize<_i6.PriceLevel>(data['data']);
+      return deserialize<_i5.PriceLevel>(data['data']);
     }
     if (dataClassName == 'Stop') {
-      return deserialize<_i7.Stop>(data['data']);
+      return deserialize<_i6.Stop>(data['data']);
     }
     if (dataClassName == 'StopStatus') {
-      return deserialize<_i8.StopStatus>(data['data']);
+      return deserialize<_i7.StopStatus>(data['data']);
     }
     if (dataClassName == 'Trip') {
-      return deserialize<_i9.Trip>(data['data']);
+      return deserialize<_i8.Trip>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -420,10 +406,10 @@ class Protocol extends _i1.SerializationManagerServer {
       }
     }
     switch (t) {
-      case _i7.Stop:
-        return _i7.Stop.t;
-      case _i9.Trip:
-        return _i9.Trip.t;
+      case _i6.Stop:
+        return _i6.Stop.t;
+      case _i8.Trip:
+        return _i8.Trip.t;
     }
     return null;
   }

@@ -17,6 +17,7 @@ class TripBuildingScreen extends StatefulWidget {
 
 class _TripBuildingScreenState extends State<TripBuildingScreen> {
   final LocalStorageService _localStorage = LocalStorageService();
+  Stop? _focusedStop;
 
   @override
   void initState() {
@@ -145,6 +146,7 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
               children: [
                 TripMapScreen(
                   trip: widget.trip,
+                  focusedStop: _focusedStop,
                 ),
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 10,
@@ -177,12 +179,23 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
                       child: PageView.builder(
                         physics: const BouncingScrollPhysics(),
                         controller: PageController(viewportFraction: 0.9),
+                        onPageChanged: (pageIndex) {
+                          setState(() {
+                            _focusedStop = stopsForSlot[pageIndex];
+                          });
+                        },
                         itemCount: stopsForSlot.length,
                         itemBuilder: (context, pageIndex) {
                           final stop = stopsForSlot[pageIndex];
                           final isSelected = stop.status == StopStatus.selected;
 
-                          return Card(
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _focusedStop = stop;
+                              });
+                            },
+                            child: Card(
                             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -246,6 +259,7 @@ class _TripBuildingScreenState extends State<TripBuildingScreen> {
                                   ),
                                 ],
                               ),
+                            ),
                             ),
                           );
                         },
