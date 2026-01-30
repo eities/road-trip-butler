@@ -34,6 +34,10 @@ The project is structured as a standard Serverpod monorepo:
 
 ## 🚀 Getting Started
 
+To quickly test the app with the Serverpod Cloud server, simply install the road-trip-butler-app-release-apk on an Android phone.
+
+To run on your own machine, follow these instructions:
+
 ### Prerequisites
 
 *   Flutter SDK
